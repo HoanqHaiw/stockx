@@ -3,14 +3,14 @@
 Hệ thống quản lý nội bộ cho công ty thương mại vật tư cơ điện / xây dựng: danh mục vật tư, mua hàng, bán hàng,
 nhập – xuất – tồn nhiều kho, chuyển kho, kiểm kê, công nợ và báo cáo.
 
-> Trạng thái: **Ngày 5/7** – xong danh mục, nhập/xuất Excel, mua hàng → nhập kho, báo giá → bán hàng → xuất kho,
-> chuyển kho, kiểm kê, tồn kho và thẻ kho.
+> Trạng thái: **Ngày 6/7** – xong toàn bộ nghiệp vụ: danh mục, mua hàng → nhập kho, báo giá → bán hàng → xuất kho,
+> chuyển kho, kiểm kê, tồn kho, thẻ kho, công nợ, thanh toán, dashboard và báo cáo Excel.
 
 ## Công nghệ
 
 | Phần | Công nghệ |
 |---|---|
-| Frontend | React, TypeScript, Vite, Tailwind CSS, TanStack Query, React Router |
+| Frontend | React, TypeScript, Vite, Tailwind CSS, TanStack Query, React Router, Chart.js |
 | Backend | Node.js, TypeScript, Express 5, Zod, JWT |
 | CSDL | PostgreSQL 16, Prisma |
 | Kiểm thử | Vitest, Supertest – chạy trên CSDL PostgreSQL thật |
@@ -43,6 +43,14 @@ nhập – xuất – tồn nhiều kho, chuyển kho, kiểm kê, công nợ v�
   cả tồn sổ, số đếm và giá trị hao hụt. Cho phép kiểm kê từng phần (chỉ mã đã đếm mới bị điều chỉnh).
 - **Thẻ kho và bảng tồn tính bằng SQL:** thẻ kho có tồn đầu kỳ, từng phát sinh kèm tồn sau phát sinh (lấy từ sổ kho),
   tồn cuối kỳ; bảng tồn lọc/gộp/phân trang trong một truy vấn, có tổng giá trị tồn theo giá mua.
+- **Công nợ có phân tuổi nợ (FIFO):** tiền thu/trả được trừ vào khoản nợ phát sinh sớm nhất; phần còn lại xếp vào
+  chưa đến hạn / quá hạn 1–30 / 31–60 / > 60 ngày (hạn 30 ngày). Không cho thu/trả vượt số đang nợ, khoá dòng đối tác
+  để hai kế toán nhập cùng lúc không làm sai số dư. Sổ chi tiết công nợ có số dư luỹ kế từng dòng.
+- **Dashboard và báo cáo theo giờ Việt Nam:** dữ liệu lưu UTC, các mốc "tháng này", "theo ngày", "từ ngày – đến ngày"
+  được quy đổi sang Asia/Ho_Chi_Minh trong SQL. Báo cáo nhập – xuất – tồn tính trong một truy vấn trên sổ kho; khi xem
+  tất cả kho thì bỏ qua chuyển kho nội bộ. Xuất Excel báo cáo nhập – xuất – tồn và công nợ.
+- **Dữ liệu mẫu 90 ngày** sinh bằng chính các service nghiệp vụ (không chèn thẳng vào bảng), nên mọi ràng buộc đều được
+  kiểm tra, dashboard và biểu đồ có số liệu thật để xem.
 - **Đơn vị trên chứng từ được "đóng băng":** mỗi dòng lưu hệ số quy đổi tại thời điểm lập, nên sửa quy đổi trong danh
   mục không làm sai đơn cũ.
 - **Không xoá cứng danh mục đã phát sinh chứng từ:** dùng trạng thái ngừng sử dụng; không cho ngừng kho còn hàng,
@@ -57,7 +65,7 @@ npm install
 npm run db:up                        # PostgreSQL ở cổng 5433 (kèm CSDL test)
 cp apps/api/.env.example apps/api/.env   # rồi đặt JWT_SECRET dài ≥ 32 ký tự
 npm run db:migrate -w apps/api
-npm run db:seed -w apps/api          # dữ liệu mẫu: 26 vật tư MEP, 3 kho, NCC, khách hàng, tồn đầu kỳ
+npm run db:seed -w apps/api          # dữ liệu mẫu: 26 vật tư MEP, 3 kho, NCC, khách hàng, 90 ngày giao dịch
 npm run dev:api                      # http://localhost:4000
 npm run dev:web                      # http://localhost:5173
 npm test                             # chạy toàn bộ test API
@@ -82,5 +90,5 @@ Mật khẩu chung: `Demo@123`. Trang đăng nhập có nút đăng nhập nhanh
 - [x] Ngày 3 – Đơn mua hàng, phiếu nhập nhận từng phần
 - [x] Ngày 4 – Báo giá → đơn bán → phiếu xuất, giao từng phần
 - [x] Ngày 5 – Chuyển kho, kiểm kê, thẻ kho, màn hình tồn kho cho điện thoại
-- [ ] Ngày 6 – Công nợ, thanh toán, dashboard, báo cáo Excel
+- [x] Ngày 6 – Công nợ, thanh toán, dashboard, báo cáo Excel
 - [ ] Ngày 7 – Đo hiệu năng với dữ liệu lớn, deploy, hoàn thiện tài liệu

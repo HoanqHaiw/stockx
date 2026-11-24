@@ -6,6 +6,7 @@ import { PrismaClient, Prisma, type Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { nextDocNumber } from '../src/lib/docNumber.js';
 import { postStockDocumentTx } from '../src/modules/stock/stock.service.js';
+import { seedHistory } from './seed-history.js';
 
 const prisma = new PrismaClient();
 const D = (v: number | string) => new Prisma.Decimal(v);
@@ -160,6 +161,12 @@ async function main() {
     });
   }
 
+  console.log('Sinh lịch sử giao dịch 90 ngày...');
+  const stats = await seedHistory(prisma);
+  console.log(
+    `  ${stats.po} đơn mua, ${stats.so} đơn bán (${stats.deliveries} đã giao), ${stats.payments} phiếu thu/chi`,
+  );
+
   const [ledgerCount, value] = await Promise.all([
     prisma.stockLedger.count(),
     prisma.$queryRaw<{ v: string }[]>`
@@ -169,7 +176,7 @@ async function main() {
   console.log(
     `Xong: ${users.length} người dùng, ${materials.length} vật tư, ${warehouses.length} kho, ${ledgerCount} dòng sổ kho.`,
   );
-  console.log(`Giá trị tồn kho đầu kỳ: ${Number(value[0].v).toLocaleString('vi-VN')} đ`);
+  console.log(`Giá trị tồn kho hiện tại: ${Number(value[0].v).toLocaleString('vi-VN')} đ`);
 }
 
 main()

@@ -63,8 +63,8 @@ export const navSections: NavSection[] = [
   {
     title: 'Tài chính',
     items: [
-      { to: '/debts', label: 'Công nợ', icon: Wallet, roles: ['ACCOUNTANT'] },
-      { to: '/reports', label: 'Báo cáo', icon: BarChart3, roles: ['ACCOUNTANT', 'PURCHASING', 'SALES'] },
+      { to: '/debts', label: 'Công nợ', icon: Wallet, roles: ['ACCOUNTANT', 'PURCHASING', 'SALES'] },
+      { to: '/reports', label: 'Nhập – xuất – tồn', icon: BarChart3, roles: ['ACCOUNTANT', 'PURCHASING', 'SALES', 'WAREHOUSE'] },
     ],
   },
 ];

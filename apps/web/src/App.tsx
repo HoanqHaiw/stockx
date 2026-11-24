@@ -7,6 +7,8 @@ import { canAccess, type Role } from './lib/roles';
 import { ComingSoonPage } from './pages/ComingSoonPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
+import { DebtsPage } from './pages/finance/DebtsPage';
+import { ReportsPage } from './pages/finance/ReportsPage';
 import { MaterialsPage } from './pages/materials/MaterialsPage';
 import { customerConfig, PartnersPage, supplierConfig } from './pages/partners/PartnersPage';
 import { PurchaseOrderDetailPage } from './pages/purchasing/PurchaseOrderDetailPage';
@@ -52,6 +54,8 @@ const pages: Record<string, ReactNode> = {
   '/sales-orders': <SalesListPage key="sales-orders" kind="salesOrder" />,
   '/stock/issues': <IssuesPage />,
   '/stock/balances': <StockBalancesPage />,
+  '/debts': <DebtsPage />,
+  '/reports': <ReportsPage />,
   '/stock/transfers': (
     <StockDocListPage
       key="transfers"
