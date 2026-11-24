@@ -8,6 +8,8 @@ import { notFound } from './lib/errors.js';
 import { errorHandler } from './middleware/error.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { masterRouter } from './modules/master/master.routes.js';
+import { partnerRouter } from './modules/master/partner.routes.js';
+import { materialsRouter } from './modules/materials/materials.routes.js';
 
 export function createApp() {
   const app = express();
@@ -23,6 +25,9 @@ export function createApp() {
 
   app.use('/api/auth', authRouter);
   app.use('/api/master', masterRouter);
+  app.use('/api/materials', materialsRouter);
+  app.use('/api/suppliers', partnerRouter('supplier', ['PURCHASING']));
+  app.use('/api/customers', partnerRouter('customer', ['SALES']));
 
   app.use((_req, _res, next) => next(notFound('API không tồn tại')));
   app.use(errorHandler);
