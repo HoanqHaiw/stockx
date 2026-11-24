@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../../i18n';
 import { Link } from 'react-router';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ChevronRight, Truck } from 'lucide-react';
@@ -33,15 +34,15 @@ export function IssuesPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Xuất kho" subtitle="Giao hàng theo đơn bán đã duyệt" />
+      <PageHeader title={t('Xuất kho')} subtitle={t('Giao hàng theo đơn bán đã duyệt')} />
 
       <section className="mb-6">
         <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <Truck className="size-4" /> Đơn chờ giao hàng
+          <Truck className="size-4" />{' '}{t('Đơn chờ giao hàng')}
           {waiting && <Badge tone="teal">{waiting.total}</Badge>}
         </h2>
         <div className="rounded-xl border border-slate-200 bg-white">
-          {waiting?.items.length === 0 && <EmptyState>Không có đơn nào đang chờ giao.</EmptyState>}
+          {waiting?.items.length === 0 && <EmptyState>{t('Không có đơn nào đang chờ giao.')}</EmptyState>}
           <ul className="divide-y divide-slate-100">
             {waiting?.items.map((so) => (
               <li key={so.id}>
@@ -53,7 +54,7 @@ export function IssuesPage() {
                     </div>
                     <div className="truncate text-sm text-slate-600">{so.customer.name}</div>
                     <div className="text-xs text-slate-500">
-                      Từ {so.warehouse.name}
+                      {t('Từ')}{' '}{so.warehouse.name}
                       {so.deliveryDate && ` · giao ${fmtDate(so.deliveryDate)}`}
                     </div>
                   </div>
@@ -67,14 +68,14 @@ export function IssuesPage() {
 
       <section>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-slate-700">Phiếu xuất đã ghi sổ</h2>
+          <h2 className="text-sm font-semibold text-slate-700">{t('Phiếu xuất đã ghi sổ')}</h2>
           <SearchBox
             value={q}
             onChange={(v) => {
               setQ(v);
               setPage(1);
             }}
-            placeholder="Tìm số phiếu, số đơn, khách…"
+            placeholder={t('Tìm số phiếu, số đơn, khách…')}
           />
         </div>
         <div className="rounded-xl border border-slate-200 bg-white">
@@ -89,16 +90,16 @@ export function IssuesPage() {
                       {d.salesOrder && <span className="text-slate-500"> · {d.salesOrder.code}</span>}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {fmtDate(d.docDate)} · {d.warehouse.name} · {d._count.lines} dòng · {d.createdBy.fullName}
+                      {fmtDate(d.docDate)} · {d.warehouse.name} · {d._count.lines}{' '}{t('dòng ·')}{' '}{d.createdBy.fullName}
                     </div>
                   </div>
-                  <span className="tabular-nums">{fmtMoney(d.totalAmount)} đ</span>
+                  <span className="tabular-nums">{fmtMoney(d.totalAmount)}{' '}{t('đ')}</span>
                 </button>
               </li>
             ))}
           </ul>
-          {isLoading && <EmptyState>Đang tải…</EmptyState>}
-          {data && data.items.length === 0 && <EmptyState>Chưa có phiếu xuất.</EmptyState>}
+          {isLoading && <EmptyState>{t('Đang tải…')}</EmptyState>}
+          {data && data.items.length === 0 && <EmptyState>{t('Chưa có phiếu xuất.')}</EmptyState>}
           {data && data.total > 0 && (
             <div className="border-t border-slate-100 px-3">
               <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={setPage} />

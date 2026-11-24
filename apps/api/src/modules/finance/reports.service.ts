@@ -196,7 +196,7 @@ function headerRow(ws: ExcelJS.Worksheet, rowNo: number, labels: string[]) {
 export async function inventoryMovementExcel(q: MovementQuery) {
   const report = await inventoryMovement(q);
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'VatTu Hub';
+  wb.creator = 'Justin Stock';
   const ws = wb.addWorksheet('NhapXuatTon');
   ws.columns = [
     { width: 6 }, { width: 14 }, { width: 36 }, { width: 8 },

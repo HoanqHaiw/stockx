@@ -14,11 +14,11 @@ const D = (v: number | string) => new Prisma.Decimal(v);
 export const DEMO_PASSWORD = 'Demo@123';
 
 const users: { email: string; fullName: string; role: Role }[] = [
-  { email: 'admin@vattuhub.test', fullName: 'Nguyễn Quản Trị', role: 'ADMIN' },
-  { email: 'muahang@vattuhub.test', fullName: 'Trần Mua Hàng', role: 'PURCHASING' },
-  { email: 'kinhdoanh@vattuhub.test', fullName: 'Lê Kinh Doanh', role: 'SALES' },
-  { email: 'thukho@vattuhub.test', fullName: 'Phạm Thủ Kho', role: 'WAREHOUSE' },
-  { email: 'ketoan@vattuhub.test', fullName: 'Vũ Kế Toán', role: 'ACCOUNTANT' },
+  { email: 'admin@justinstock.test', fullName: 'Nguyễn Quản Trị', role: 'ADMIN' },
+  { email: 'muahang@justinstock.test', fullName: 'Trần Mua Hàng', role: 'PURCHASING' },
+  { email: 'kinhdoanh@justinstock.test', fullName: 'Lê Kinh Doanh', role: 'SALES' },
+  { email: 'thukho@justinstock.test', fullName: 'Phạm Thủ Kho', role: 'WAREHOUSE' },
+  { email: 'ketoan@justinstock.test', fullName: 'Vũ Kế Toán', role: 'ACCOUNTANT' },
 ];
 
 const units: [string, string][] = [
@@ -93,7 +93,7 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
   await prisma.user.createMany({ data: users.map((u) => ({ ...u, passwordHash })) });
-  const admin = await prisma.user.findUniqueOrThrow({ where: { email: 'admin@vattuhub.test' } });
+  const admin = await prisma.user.findUniqueOrThrow({ where: { email: 'admin@justinstock.test' } });
 
   await prisma.unit.createMany({ data: units.map(([code, name]) => ({ code, name })) });
   await prisma.materialGroup.createMany({ data: groups.map(([code, name]) => ({ code, name })) });

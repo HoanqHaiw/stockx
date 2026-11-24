@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { t } from '../i18n';
 import { Plus, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { fmtMoney, fmtQty } from '../lib/format';
@@ -92,7 +93,7 @@ export function LinesEditor({
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-4 py-3 font-medium">{title}</div>
+      <div className="border-b border-slate-200 px-4 py-3 font-medium">{t(title)}</div>
       <div className="divide-y divide-slate-100">
         {lines.map((l, i) => {
           const units = l.material ? [l.material.baseUnit, ...l.material.conversions.map((c) => c.unit)] : [];
@@ -108,7 +109,7 @@ export function LinesEditor({
                   : 'xl:grid-cols-[2rem_minmax(0,1fr)_8rem_7rem_2.5rem]'
               }`}
             >
-              <div className="col-span-2 text-sm font-medium text-slate-400 sm:col-span-4 xl:col-span-1 xl:pt-2">Dòng {i + 1}</div>
+              <div className="col-span-2 text-sm font-medium text-slate-400 sm:col-span-4 xl:col-span-1 xl:pt-2">{t('Dòng')}{' '}{i + 1}</div>
               <div className="col-span-2 sm:col-span-4 xl:col-span-1">
                 <MaterialPicker value={l.material} onChange={(m) => pick(l.key, m)} />
                 {l.material && (
@@ -120,15 +121,15 @@ export function LinesEditor({
                     )}
                     {available !== undefined && (
                       <span className={short ? 'font-medium text-red-600' : ''}>
-                        Tồn kho: {fmtQty(available)} {l.material.baseUnit.name.toLowerCase()}
-                        {short && ' – không đủ'}
+                        {t('Tồn kho:')}{' '}{fmtQty(available)} {l.material.baseUnit.name.toLowerCase()}
+                        {short && t(' – không đủ')}
                       </span>
                     )}
                   </p>
                 )}
               </div>
               <select
-                aria-label="Đơn vị"
+                aria-label={t('Đơn vị')}
                 value={l.unitId}
                 onChange={(e) => changeUnit(l, e.target.value)}
                 disabled={!l.material}
@@ -141,7 +142,7 @@ export function LinesEditor({
                 ))}
               </select>
               <input
-                aria-label="Số lượng"
+                aria-label={t('Số lượng')}
                 type="number"
                 min={0}
                 step="any"
@@ -151,7 +152,7 @@ export function LinesEditor({
               />
               {showPrice && (
               <input
-                aria-label="Đơn giá"
+                aria-label={t('Đơn giá')}
                 type="number"
                 min={0}
                 value={l.unitPrice}
@@ -169,7 +170,7 @@ export function LinesEditor({
                 disabled={lines.length === 1}
                 onClick={() => onChange(lines.filter((x) => x.key !== l.key))}
                 className="justify-self-end rounded p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
-                aria-label="Xoá dòng"
+                aria-label={t('Xoá dòng')}
               >
                 <Trash2 className="size-4" />
               </button>
@@ -179,11 +180,11 @@ export function LinesEditor({
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3">
         <Button variant="ghost" onClick={() => onChange([...lines, newLine()])}>
-          <Plus className="size-4" /> Thêm dòng
+          <Plus className="size-4" />{' '}{t('Thêm dòng')}
         </Button>
         {showPrice && (
         <div className="text-sm">
-          Tổng cộng: <span className="text-lg font-semibold tabular-nums">{fmtMoney(linesTotal(lines))} đ</span>
+          {t('Tổng cộng:')}{' '}<span className="text-lg font-semibold tabular-nums">{fmtMoney(linesTotal(lines))}{' '}{t('đ')}</span>
         </div>
         )}
       </div>

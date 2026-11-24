@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { t } from '../../i18n';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -92,22 +93,22 @@ export function SalesDocFormPage({ kind }: { kind: Kind }) {
   return (
     <div className="mx-auto max-w-6xl">
       <Link to={isEdit ? `${c.base}/${id}` : c.base} className="mb-2 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-        <ArrowLeft className="size-4" /> Quay lại
+        <ArrowLeft className="size-4" />{' '}{t('Quay lại')}
       </Link>
-      <PageHeader title={isEdit ? `Sửa ${c.noun} ${existing?.code ?? ''}` : c.create} />
+      <PageHeader title={isEdit ? t('Sửa {noun} {code}', { noun: t(c.noun), code: existing?.code ?? '' }) : c.create} />
 
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         {general && <ErrorBanner message={general} />}
 
         <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
           <SelectInput
-            label="Khách hàng"
+            label={t('Khách hàng')}
             required
             value={header.customerId}
             onChange={(e) => setHeader({ ...header, customerId: e.target.value })}
             error={errors.customerId}
           >
-            <option value="">— Chọn khách hàng —</option>
+            <option value="">{t('— Chọn khách hàng —')}</option>
             {customers?.items.map((cu) => (
               <option key={cu.id} value={cu.id}>
                 {cu.name}
@@ -116,7 +117,7 @@ export function SalesDocFormPage({ kind }: { kind: Kind }) {
           </SelectInput>
           {kind === 'salesOrder' && (
             <SelectInput
-              label="Kho xuất"
+              label={t('Kho xuất')}
               required
               value={header.warehouseId}
               onChange={(e) => setHeader({ ...header, warehouseId: e.target.value })}
@@ -130,14 +131,14 @@ export function SalesDocFormPage({ kind }: { kind: Kind }) {
             </SelectInput>
           )}
           <TextInput
-            label={kind === 'quotation' ? 'Hiệu lực đến' : 'Ngày giao dự kiến'}
+            label={kind === 'quotation' ? t('Hiệu lực đến') : t('Ngày giao dự kiến')}
             type="date"
             value={header.date}
             onChange={(e) => setHeader({ ...header, date: e.target.value })}
             error={errors.validUntil ?? errors.deliveryDate}
           />
           <div className={kind === 'quotation' ? 'sm:col-span-2' : ''}>
-            <TextInput label="Ghi chú" value={header.note} onChange={(e) => setHeader({ ...header, note: e.target.value })} />
+            <TextInput label={t('Ghi chú')} value={header.note} onChange={(e) => setHeader({ ...header, note: e.target.value })} />
           </div>
         </div>
 
@@ -146,13 +147,13 @@ export function SalesDocFormPage({ kind }: { kind: Kind }) {
           onChange={setLines}
           priceField="salePrice"
           stockWarehouseId={kind === 'salesOrder' ? Number(header.warehouseId) || undefined : undefined}
-          title={kind === 'quotation' ? 'Vật tư báo giá' : 'Vật tư bán'}
+          title={kind === 'quotation' ? t('Vật tư báo giá') : t('Vật tư bán')}
         />
 
         <div className="flex justify-end gap-2">
-          <Button onClick={() => navigate(-1)}>Huỷ</Button>
+          <Button onClick={() => navigate(-1)}>{t('Huỷ')}</Button>
           <Button variant="primary" type="submit" disabled={save.isPending}>
-            {save.isPending ? 'Đang lưu…' : isEdit ? 'Lưu thay đổi' : 'Lưu nháp'}
+            {save.isPending ? t('Đang lưu…') : isEdit ? t('Lưu thay đổi') : t('Lưu nháp')}
           </Button>
         </div>
       </form>

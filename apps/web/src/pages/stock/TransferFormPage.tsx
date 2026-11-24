@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { t } from '../../i18n';
 import { Link, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
@@ -58,9 +59,9 @@ export function TransferFormPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <Link to="/stock/transfers" className="mb-2 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-        <ArrowLeft className="size-4" /> Chuyển kho
+        <ArrowLeft className="size-4" />{' '}{t('Chuyển kho')}
       </Link>
-      <PageHeader title="Phiếu chuyển kho" subtitle="Hàng được trừ ở kho xuất và cộng vào kho nhận ngay khi lưu" />
+      <PageHeader title={t('Phiếu chuyển kho')} subtitle={t('Hàng được trừ ở kho xuất và cộng vào kho nhận ngay khi lưu')} />
 
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         {general && <ErrorBanner message={general} />}
@@ -68,7 +69,7 @@ export function TransferFormPage() {
           <ul className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
             {shortages.map((s) => (
               <li key={s.materialCode}>
-                <b>{s.materialCode}</b>: cần {fmtQty(s.required)} {unitOfCode.get(s.materialCode)}, kho xuất chỉ còn{' '}
+                <b>{s.materialCode}</b>{t(': cần')}{' '}{fmtQty(s.required)} {unitOfCode.get(s.materialCode)}{t(', kho xuất chỉ còn')}{' '}
                 {fmtQty(s.available)}
               </li>
             ))}
@@ -76,7 +77,7 @@ export function TransferFormPage() {
         )}
 
         <div className="grid items-end gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_auto_1fr]">
-          <SelectInput label="Kho xuất" required value={from} onChange={(e) => setFrom(e.target.value)} error={errors.fromWarehouseId}>
+          <SelectInput label={t('Kho xuất')} required value={from} onChange={(e) => setFrom(e.target.value)} error={errors.fromWarehouseId}>
             {warehouses.map((w) => (
               <option key={w.id} value={w.id}>
                 {w.name}
@@ -84,7 +85,7 @@ export function TransferFormPage() {
             ))}
           </SelectInput>
           <ArrowRight className="mx-auto hidden size-5 text-slate-400 sm:mb-2.5 sm:block" />
-          <SelectInput label="Kho nhận" required value={to} onChange={(e) => setTo(e.target.value)} error={errors.toWarehouseId}>
+          <SelectInput label={t('Kho nhận')} required value={to} onChange={(e) => setTo(e.target.value)} error={errors.toWarehouseId}>
             {warehouses.map((w) => (
               <option key={w.id} value={w.id}>
                 {w.name}
@@ -92,7 +93,7 @@ export function TransferFormPage() {
             ))}
           </SelectInput>
           <div className="sm:col-span-3">
-            <TextInput label="Ghi chú" value={note} onChange={(e) => setNote(e.target.value)} placeholder="VD: Cấp hàng cho tầng 5 – 7" />
+            <TextInput label={t('Ghi chú')} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('VD: Cấp hàng cho tầng 5 – 7')} />
           </div>
         </div>
 
@@ -102,13 +103,13 @@ export function TransferFormPage() {
           priceField="purchasePrice"
           stockWarehouseId={Number(from) || undefined}
           showPrice={false}
-          title="Vật tư chuyển"
+          title={t('Vật tư chuyển')}
         />
 
         <div className="flex justify-end gap-2">
-          <Button onClick={() => navigate(-1)}>Huỷ</Button>
+          <Button onClick={() => navigate(-1)}>{t('Huỷ')}</Button>
           <Button variant="primary" type="submit" disabled={save.isPending}>
-            {save.isPending ? 'Đang ghi sổ…' : 'Chuyển kho'}
+            {save.isPending ? t('Đang ghi sổ…') : t('Chuyển kho')}
           </Button>
         </div>
       </form>

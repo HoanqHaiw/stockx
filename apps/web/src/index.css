@@ -1,7 +1,63 @@
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
 @import 'tailwindcss';
 
+/*
+ * Hệ thiết kế Justin Stock (tham khảo taste-skill, bảng màu "Frost and slate"):
+ * - Giao diện 90–95% trung tính; một màu nhấn duy nhất (teal) cho nút chính, liên kết, focus, trạng thái chọn.
+ * - Mực chữ gần đen ngả xanh (#1f3038), không dùng #000. Đường kẻ = mực ở 11% / 20%.
+ * - Không chữ nào nhỏ hơn 13px; số dùng tabular-nums; nhãn viết hoa chữ đầu, không viết hoa toàn bộ.
+ * - Chuyển động ngắn, không nảy: 150–180ms, chỉ đổi màu / transform / opacity.
+ */
 @theme {
-  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* Thang chữ: nhỏ nhất 13px */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.15rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.3rem;
+
+  /* Trung tính "frost and slate" thay cho slate mặc định: mọi class slate-* trong app dùng bảng này */
+  --color-slate-50: #f7f9fa;
+  --color-slate-100: #ecf0f2;
+  --color-slate-200: #dde3e6;
+  --color-slate-300: #c5ced2;
+  --color-slate-400: #95a2a8;
+  --color-slate-500: #5d6b72;
+  --color-slate-600: #4a5960;
+  --color-slate-700: #36454c;
+  --color-slate-800: #1f3038;
+  --color-slate-900: #172429;
+
+  /* Màu nhấn duy nhất */
+  --color-teal-50: #eef6f7;
+  --color-teal-100: #d3e9eb;
+  --color-teal-400: #3a9aa4;
+  --color-teal-500: #13838e;
+  --color-teal-600: #0d7480;
+  --color-teal-700: #0a5f69;
+
+  /* Trạng thái: đỏ lỗi theo hệ thiết kế */
+  --color-red-600: #d92d20;
+  --color-red-700: #b42318;
+
+  --radius-sm: 6px;
+  --radius-md: 8px; /* ô nhập, nút */
+  --radius-lg: 10px;
+  --radius-xl: 12px; /* thẻ, khung */
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root {
+  --line: color-mix(in oklab, var(--color-slate-800) 11%, transparent);
+  --line-strong: color-mix(in oklab, var(--color-slate-800) 20%, transparent);
 }
 
 html,
@@ -11,5 +67,40 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+  @apply bg-slate-50 font-sans text-slate-800 antialiased;
+  font-feature-settings: 'cv11';
+}
+
+h1 {
+  letter-spacing: -0.02em;
+}
+
+/* Đường viền mặc định là đường kẻ mảnh theo màu mực */
+*,
+::before,
+::after {
+  border-color: var(--line);
+}
+
+/* Focus: vòng 2px màu nhấn, không hiệu ứng chuyển */
+:focus-visible {
+  outline: 2px solid var(--color-teal-600);
+  outline-offset: 2px;
+  transition: none;
+}
+
+/* Số liệu luôn thẳng cột */
+.tabular-nums,
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

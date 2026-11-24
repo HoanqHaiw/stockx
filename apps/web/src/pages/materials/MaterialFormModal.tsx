@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { t } from '../../i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2 } from 'lucide-react';
 import { api, ApiError, fieldErrors } from '../../lib/api';
@@ -91,7 +92,7 @@ export function MaterialFormModal({
     });
   }
 
-  const title = readOnly ? 'Thông tin vật tư' : material ? `Sửa vật tư ${material.code}` : 'Thêm vật tư';
+  const title = readOnly ? 'Thông tin vật tư' : material ? t('Sửa vật tư {code}', { code: material.code }) : 'Thêm vật tư';
 
   return (
     <Modal
@@ -101,10 +102,10 @@ export function MaterialFormModal({
       wide
       footer={
         <>
-          <Button onClick={onClose}>{readOnly ? 'Đóng' : 'Huỷ'}</Button>
+          <Button onClick={onClose}>{readOnly ? t('Đóng') : t('Huỷ')}</Button>
           {!readOnly && (
             <Button variant="primary" type="submit" form="material-form" disabled={save.isPending}>
-              {save.isPending ? 'Đang lưu…' : 'Lưu'}
+              {save.isPending ? t('Đang lưu…') : t('Lưu')}
             </Button>
           )}
         </>
@@ -114,22 +115,22 @@ export function MaterialFormModal({
         {generalError && <ErrorBanner message={generalError} />}
         <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2">
           <TextInput
-            label="Mã vật tư"
+            label={t('Mã vật tư')}
             required
             value={form.code}
             onChange={(e) => set('code', e.target.value.toUpperCase())}
             error={errors.code}
             placeholder="VD: DC-CV2.5"
           />
-          <TextInput label="Tên vật tư" required value={form.name} onChange={(e) => set('name', e.target.value)} error={errors.name} />
+          <TextInput label={t('Tên vật tư')} required value={form.name} onChange={(e) => set('name', e.target.value)} error={errors.name} />
           <TextInput
-            label="Quy cách"
+            label={t('Quy cách')}
             value={form.specification}
             onChange={(e) => set('specification', e.target.value)}
             error={errors.specification}
           />
-          <SelectInput label="Nhóm vật tư" required value={form.groupId} onChange={(e) => set('groupId', e.target.value)} error={errors.groupId}>
-            <option value="">— Chọn nhóm —</option>
+          <SelectInput label={t('Nhóm vật tư')} required value={form.groupId} onChange={(e) => set('groupId', e.target.value)} error={errors.groupId}>
+            <option value="">{t('— Chọn nhóm —')}</option>
             {groups.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.name}
@@ -137,13 +138,13 @@ export function MaterialFormModal({
             ))}
           </SelectInput>
           <SelectInput
-            label="Đơn vị tính cơ sở"
+            label={t('Đơn vị tính cơ sở')}
             required
             value={form.baseUnitId}
             onChange={(e) => set('baseUnitId', e.target.value)}
             error={errors.baseUnitId}
           >
-            <option value="">— Chọn ĐVT —</option>
+            <option value="">{t('— Chọn ĐVT —')}</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.name}
@@ -151,7 +152,7 @@ export function MaterialFormModal({
             ))}
           </SelectInput>
           <TextInput
-            label="Tồn tối thiểu"
+            label={t('Tồn tối thiểu')}
             type="number"
             min={0}
             step="any"
@@ -161,7 +162,7 @@ export function MaterialFormModal({
             hint={baseUnit ? `Theo ${baseUnit.name.toLowerCase()}` : undefined}
           />
           <TextInput
-            label="Giá mua (đ)"
+            label={t('Giá mua (đ)')}
             type="number"
             min={0}
             value={form.purchasePrice}
@@ -169,7 +170,7 @@ export function MaterialFormModal({
             error={errors.purchasePrice}
           />
           <TextInput
-            label="Giá bán (đ)"
+            label={t('Giá bán (đ)')}
             type="number"
             min={0}
             value={form.salePrice}
@@ -178,23 +179,23 @@ export function MaterialFormModal({
           />
 
           <div className="sm:col-span-2">
-            <Field label="Quy đổi đơn vị" error={errors.conversions}>
+            <Field label={t('Quy đổi đơn vị')} error={errors.conversions}>
               <div className="space-y-2">
                 {form.conversions.length === 0 && (
-                  <p className="text-sm text-slate-500">Chưa có. Ví dụ: 1 cuộn = 100 mét.</p>
+                  <p className="text-sm text-slate-500">{t('Chưa có. Ví dụ: 1 cuộn = 100 mét.')}</p>
                 )}
                 {form.conversions.map((c, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <span className="text-sm text-slate-500">1</span>
                     <select
-                      aria-label="Đơn vị quy đổi"
+                      aria-label={t('Đơn vị quy đổi')}
                       value={c.unitId}
                       onChange={(e) =>
                         set('conversions', form.conversions.map((x, j) => (j === i ? { ...x, unitId: e.target.value } : x)))
                       }
                       className="w-32 rounded-md border border-slate-300 bg-white px-2 py-2 text-sm"
                     >
-                      <option value="">— ĐVT —</option>
+                      <option value="">{t('— ĐVT —')}</option>
                       {units
                         .filter((u) => String(u.id) !== form.baseUnitId)
                         .map((u) => (
@@ -205,7 +206,7 @@ export function MaterialFormModal({
                     </select>
                     <span className="text-sm text-slate-500">=</span>
                     <input
-                      aria-label="Hệ số quy đổi"
+                      aria-label={t('Hệ số quy đổi')}
                       type="number"
                       min={0}
                       step="any"
@@ -215,13 +216,13 @@ export function MaterialFormModal({
                       }
                       className="w-24 rounded-md border border-slate-300 px-2 py-2 text-sm"
                     />
-                    <span className="text-sm text-slate-500">{baseUnit?.name.toLowerCase() ?? 'ĐVT cơ sở'}</span>
+                    <span className="text-sm text-slate-500">{baseUnit?.name.toLowerCase() ?? t('ĐVT cơ sở')}</span>
                     {!readOnly && (
                       <button
                         type="button"
                         onClick={() => set('conversions', form.conversions.filter((_, j) => j !== i))}
                         className="ml-auto rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                        aria-label="Xoá quy đổi"
+                        aria-label={t('Xoá quy đổi')}
                       >
                         <Trash2 className="size-4" />
                       </button>
@@ -234,7 +235,7 @@ export function MaterialFormModal({
                     className="px-2"
                     onClick={() => set('conversions', [...form.conversions, { unitId: '', factor: '1' }])}
                   >
-                    <Plus className="size-4" /> Thêm quy đổi
+                    <Plus className="size-4" />{' '}{t('Thêm quy đổi')}
                   </Button>
                 )}
               </div>

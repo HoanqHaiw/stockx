@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '../../i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../../lib/api';
 import { fmtQty, unitOf } from '../../lib/format';
@@ -58,21 +59,21 @@ export function ReceiveModal({
   return (
     <Modal
       open={open}
-      title={`Nhập kho theo đơn ${po.code}`}
+      title={t('Nhập kho theo đơn {code}', { code: po.code })}
       onClose={onClose}
       wide
       footer={
         <>
-          <Button onClick={onClose}>Huỷ</Button>
+          <Button onClick={onClose}>{t('Huỷ')}</Button>
           <Button variant="primary" disabled={submit.isPending} onClick={() => submit.mutate()}>
-            {submit.isPending ? 'Đang ghi sổ…' : 'Xác nhận nhập kho'}
+            {submit.isPending ? t('Đang ghi sổ…') : t('Xác nhận nhập kho')}
           </Button>
         </>
       }
     >
       {submit.error instanceof ApiError && <ErrorBanner message={submit.error.message} />}
       <p className="mb-3 text-sm text-slate-600">
-        Nhập vào <b>{po.warehouse.name}</b>. Điền số lượng thực tế nhận được; để 0 với hàng chưa về.
+        {t('Nhập vào')}{' '}<b>{po.warehouse.name}</b>{t('. Điền số lượng thực tế nhận được; để 0 với hàng chưa về.')}
       </p>
       <div className="divide-y divide-slate-100 rounded-md border border-slate-200">
         {pending.map((l) => {
@@ -83,12 +84,12 @@ export function ReceiveModal({
                 <div className="font-mono text-xs text-slate-500">{l.material.code}</div>
                 <div className="text-sm font-medium">{l.material.name}</div>
                 <div className="text-xs text-slate-500">
-                  Đặt {fmtQty(l.quantity)} · còn lại {fmtQty(remainingInUnit(l))} {unit.name.toLowerCase()}
+                  {t('Đặt')}{' '}{fmtQty(l.quantity)}{' '}{t('· còn lại')}{' '}{fmtQty(remainingInUnit(l))} {unit.name.toLowerCase()}
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <input
-                  aria-label={`Số thực nhận ${l.material.code}`}
+                  aria-label={t('Số thực nhận {code}', { code: l.material.code })}
                   type="number"
                   inputMode="decimal"
                   min={0}
@@ -104,7 +105,7 @@ export function ReceiveModal({
         })}
       </div>
       <div className="mt-3">
-        <TextInput label="Ghi chú" value={note} onChange={(e) => setNote(e.target.value)} placeholder="VD: Xe biển số 29C-123.45, thiếu 1 cuộn" />
+        <TextInput label={t('Ghi chú')} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('VD: Xe biển số 29C-123.45, thiếu 1 cuộn')} />
       </div>
     </Modal>
   );

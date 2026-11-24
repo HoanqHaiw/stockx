@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../../i18n';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, Plus, Upload } from 'lucide-react';
 import { api, downloadFile } from '../../lib/api';
@@ -70,20 +71,20 @@ export function MaterialsPage() {
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
-        title="Vật tư"
-        subtitle="Danh mục vật tư, quy cách, đơn vị tính và tồn kho tổng"
+        title={t('Vật tư')}
+        subtitle={t('Danh mục vật tư, quy cách, đơn vị tính và tồn kho tổng')}
         actions={
           <>
             <Button onClick={() => void exportExcel()} disabled={exporting}>
-              <Download className="size-4" /> {exporting ? 'Đang xuất…' : 'Xuất Excel'}
+              <Download className="size-4" /> {exporting ? t('Đang xuất…') : t('Xuất Excel')}
             </Button>
             {canEdit && (
               <>
                 <Button onClick={() => setImportOpen(true)}>
-                  <Upload className="size-4" /> Nhập Excel
+                  <Upload className="size-4" />{' '}{t('Nhập Excel')}
                 </Button>
                 <Button variant="primary" onClick={() => open(null)}>
-                  <Plus className="size-4" /> Thêm vật tư
+                  <Plus className="size-4" />{' '}{t('Thêm vật tư')}
                 </Button>
               </>
             )}
@@ -92,14 +93,14 @@ export function MaterialsPage() {
       />
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <SearchBox value={q} onChange={resetPage(setQ)} placeholder="Tìm mã, tên, quy cách…" />
+        <SearchBox value={q} onChange={resetPage(setQ)} placeholder={t('Tìm mã, tên, quy cách…')} />
         <select
-          aria-label="Lọc theo nhóm"
+          aria-label={t('Lọc theo nhóm')}
           value={groupId}
           onChange={(e) => resetPage(setGroupId)(e.target.value)}
           className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
         >
-          <option value="">Tất cả nhóm</option>
+          <option value="">{t('Tất cả nhóm')}</option>
           {groups.map((g) => (
             <option key={g.id} value={g.id}>
               {g.name}
@@ -107,21 +108,21 @@ export function MaterialsPage() {
           ))}
         </select>
         <select
-          aria-label="Lọc theo trạng thái"
+          aria-label={t('Lọc theo trạng thái')}
           value={active}
           onChange={(e) => resetPage(setActive)(e.target.value as 'true' | 'false')}
           className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
         >
-          <option value="true">Đang dùng</option>
-          <option value="false">Ngừng dùng</option>
+          <option value="true">{t('Đang dùng')}</option>
+          <option value="false">{t('Ngừng dùng')}</option>
         </select>
         <label className="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm">
           <input type="checkbox" checked={lowStock} onChange={(e) => resetPage(setLowStock)(e.target.checked)} />
-          Dưới mức tối thiểu
+          {t('Dưới mức tối thiểu')}
         </label>
       </div>
 
-      {error && <ErrorBanner message="Không tải được danh sách vật tư" />}
+      {error && <ErrorBanner message={t('Không tải được danh sách vật tư')} />}
 
       <div className="rounded-xl border border-slate-200 bg-white">
         {/* Bảng trên máy tính */}
@@ -129,13 +130,13 @@ export function MaterialsPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500">
               <tr>
-                <th className="px-4 py-2.5">Mã</th>
-                <th className="px-4 py-2.5">Tên vật tư</th>
-                <th className="px-4 py-2.5">Nhóm</th>
-                <th className="px-4 py-2.5">ĐVT</th>
-                <th className="px-4 py-2.5 text-right">Giá bán</th>
-                <th className="px-4 py-2.5 text-right">Tồn tổng</th>
-                <th className="px-4 py-2.5 text-right">Tối thiểu</th>
+                <th className="px-4 py-2.5">{t('Mã')}</th>
+                <th className="px-4 py-2.5">{t('Tên vật tư')}</th>
+                <th className="px-4 py-2.5">{t('Nhóm')}</th>
+                <th className="px-4 py-2.5">{t('ĐVT')}</th>
+                <th className="px-4 py-2.5 text-right">{t('Giá bán')}</th>
+                <th className="px-4 py-2.5 text-right">{t('Tồn tổng')}</th>
+                <th className="px-4 py-2.5 text-right">{t('Tối thiểu')}</th>
                 {canEdit && <th className="px-4 py-2.5" />}
               </tr>
             </thead>
@@ -171,7 +172,7 @@ export function MaterialsPage() {
                           toggleActive.mutate(m);
                         }}
                       >
-                        {m.isActive ? 'Ngừng dùng' : 'Dùng lại'}
+                        {m.isActive ? t('Ngừng dùng') : t('Dùng lại')}
                       </Button>
                     </td>
                   )}
@@ -200,8 +201,8 @@ export function MaterialsPage() {
           ))}
         </ul>
 
-        {isLoading && <EmptyState>Đang tải…</EmptyState>}
-        {data && data.items.length === 0 && <EmptyState>Không có vật tư phù hợp.</EmptyState>}
+        {isLoading && <EmptyState>{t('Đang tải…')}</EmptyState>}
+        {data && data.items.length === 0 && <EmptyState>{t('Không có vật tư phù hợp.')}</EmptyState>}
         {data && data.total > 0 && (
           <div className="border-t border-slate-100 px-3">
             <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={setPage} />

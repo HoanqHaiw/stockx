@@ -53,7 +53,7 @@ export async function exportMaterials(): Promise<ExcelJS.Buffer> {
   const stock = await totalStockOf(materials.map((m) => m.id));
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'VatTu Hub';
+  wb.creator = 'Justin Stock';
   const ws = wb.addWorksheet('VatTu');
   ws.columns = [
     ...COLUMNS.map((c) => ({ key: c.key, header: c.header, width: c.width })),

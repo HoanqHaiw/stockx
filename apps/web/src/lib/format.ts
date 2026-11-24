@@ -1,11 +1,13 @@
-const qtyFmt = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 });
-const moneyFmt = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+import { locale } from '../i18n';
 
-export const fmtQty = (v: string | number | null | undefined) => qtyFmt.format(Number(v ?? 0));
-export const fmtMoney = (v: string | number | null | undefined) => moneyFmt.format(Number(v ?? 0));
+const fmt = (opts: Intl.NumberFormatOptions) => (v: string | number | null | undefined) =>
+  new Intl.NumberFormat(locale(), opts).format(Number(v ?? 0));
+
+export const fmtQty = fmt({ maximumFractionDigits: 3 });
+export const fmtMoney = fmt({ maximumFractionDigits: 0 });
 
 export const fmtDate = (v: string | null | undefined) =>
-  v ? new Date(v).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  v ? new Date(v).toLocaleDateString(locale(), { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 
 /** yyyy-mm-dd cho <input type="date">. */
 export const toDateInput = (v: string | null | undefined) => (v ? v.slice(0, 10) : '');

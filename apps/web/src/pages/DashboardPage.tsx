@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { locale, t } from '../i18n';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -49,10 +50,10 @@ const SERIES = { revenue: '#2a78d6', purchase: '#eb6834' };
 /** Rút gọn số tiền cho trục và ô số liệu: 1.250.000.000 → 1,25 tỷ. */
 const short = (v: number) =>
   Math.abs(v) >= 1e9
-    ? `${(v / 1e9).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} tỷ`
+    ? `${(v / 1e9).toLocaleString(locale(), { maximumFractionDigits: 2 })} ${t('tỷ')}`
     : Math.abs(v) >= 1e6
-      ? `${(v / 1e6).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} tr`
-      : v.toLocaleString('vi-VN');
+      ? `${(v / 1e6).toLocaleString(locale(), { maximumFractionDigits: 1 })} ${t('tr')}`
+      : v.toLocaleString(locale());
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -61,7 +62,7 @@ export function DashboardPage() {
     queryFn: () => api<Dashboard>('/reports/dashboard'),
   });
 
-  if (error) return <ErrorBanner message="Không tải được bảng điều khiển" />;
+  if (error) return <ErrorBanner message={t('Không tải được bảng điều khiển')} />;
 
   const k = data?.kpi;
   const growth =
@@ -69,13 +70,13 @@ export function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <h1 className="text-xl font-semibold">Xin chào, {user?.fullName}</h1>
-      <p className="mb-5 text-sm text-slate-500">Tình hình kinh doanh và kho tháng này</p>
+      <h1 className="text-xl font-semibold">{t('Xin chào,')}{' '}{user?.fullName}</h1>
+      <p className="mb-5 text-sm text-slate-500">{t('Tình hình kinh doanh và kho tháng này')}</p>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi
-          label="Doanh thu tháng này"
-          value={k && `${short(Number(k.revenueMonth))} đ`}
+          label={t('Doanh thu tháng này')}
+          value={k && `${short(Number(k.revenueMonth))} ${t('đ')}`}
           sub={
             k && (
               <span className="inline-flex items-center gap-0.5 text-slate-500">
@@ -85,35 +86,35 @@ export function DashboardPage() {
                   ) : (
                     <ArrowDownRight className="size-3.5 text-slate-400" />
                   ))}
-                Cả tháng trước: {short(Number(k.revenuePrevMonth))} đ
+                {t('Cả tháng trước:')}{' '}{short(Number(k.revenuePrevMonth))}{' '}{t('đ')}
               </span>
             )
           }
           loading={isLoading}
         />
-        <Kpi label="Giá trị nhập tháng này" value={k && `${short(Number(k.purchaseMonth))} đ`} loading={isLoading} />
+        <Kpi label={t('Giá trị nhập tháng này')} value={k && `${short(Number(k.purchaseMonth))} ${t('đ')}`} loading={isLoading} />
         <Kpi
-          label="Giá trị tồn kho"
-          value={k && `${short(Number(k.inventoryValue))} đ`}
+          label={t('Giá trị tồn kho')}
+          value={k && `${short(Number(k.inventoryValue))} ${t('đ')}`}
           sub={
             k && k.lowStockCount > 0 ? (
               <Link to="/stock/balances" className="inline-flex items-center gap-1 text-red-700 hover:underline">
-                <AlertTriangle className="size-3.5" /> {k.lowStockCount} mã dưới mức tối thiểu
+                <AlertTriangle className="size-3.5" /> {k.lowStockCount}{' '}{t('mã dưới mức tối thiểu')}
               </Link>
             ) : undefined
           }
           loading={isLoading}
         />
         <Kpi
-          label="Phải thu khách hàng"
-          value={k && `${short(Number(k.receivable))} đ`}
+          label={t('Phải thu khách hàng')}
+          value={k && `${short(Number(k.receivable))} ${t('đ')}`}
           sub={
             k && Number(k.receivableOverdue) > 0 ? (
               <span className="inline-flex items-center gap-1 text-red-700">
-                <AlertTriangle className="size-3.5" /> Quá hạn {short(Number(k.receivableOverdue))} đ
+                <AlertTriangle className="size-3.5" />{' '}{t('Quá hạn')}{' '}{short(Number(k.receivableOverdue))}{' '}{t('đ')}
               </span>
             ) : (
-              k && `Phải trả NCC: ${short(Number(k.payable))} đ`
+              k && t('Phải trả NCC: {v}', { v: `${short(Number(k.payable))} ${t('đ')}` })
             )
           }
           loading={isLoading}
@@ -122,22 +123,22 @@ export function DashboardPage() {
 
       {data && (
         <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Todo icon={<ClipboardList className="size-4" />} to="/purchase-orders" label="Đơn mua chờ duyệt" n={data.pending.purchaseOrdersToApprove} />
-          <Todo icon={<ClipboardList className="size-4" />} to="/sales-orders" label="Đơn bán chờ duyệt" n={data.pending.salesOrdersToApprove} />
-          <Todo icon={<PackagePlus className="size-4" />} to="/stock/receipts" label="Đơn chờ nhận hàng" n={data.pending.purchaseOrdersToReceive} />
-          <Todo icon={<PackageMinus className="size-4" />} to="/stock/issues" label="Đơn chờ giao hàng" n={data.pending.salesOrdersToDeliver} />
+          <Todo icon={<ClipboardList className="size-4" />} to="/purchase-orders" label={t('Đơn mua chờ duyệt')} n={data.pending.purchaseOrdersToApprove} />
+          <Todo icon={<ClipboardList className="size-4" />} to="/sales-orders" label={t('Đơn bán chờ duyệt')} n={data.pending.salesOrdersToApprove} />
+          <Todo icon={<PackagePlus className="size-4" />} to="/stock/receipts" label={t('Đơn chờ nhận hàng')} n={data.pending.purchaseOrdersToReceive} />
+          <Todo icon={<PackageMinus className="size-4" />} to="/stock/issues" label={t('Đơn chờ giao hàng')} n={data.pending.salesOrdersToDeliver} />
         </div>
       )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <section className="rounded-xl border border-slate-200 bg-white p-4 lg:col-span-2">
-          <h2 className="mb-3 text-sm font-semibold">Doanh thu và giá trị nhập 30 ngày gần nhất</h2>
+          <h2 className="mb-3 text-sm font-semibold">{t('Doanh thu và giá trị nhập 30 ngày gần nhất')}</h2>
           <div className="h-64">{data ? <TrendChart series={data.series} /> : <div className="h-full animate-pulse rounded bg-slate-50" />}</div>
         </section>
 
         <section className="rounded-xl border border-slate-200 bg-white p-4">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <Boxes className="size-4 text-slate-400" /> Bán chạy 30 ngày
+            <Boxes className="size-4 text-slate-400" />{' '}{t('Bán chạy 30 ngày')}
           </h2>
           <RankList items={data?.topMaterials.map((m) => ({ key: m.code, label: m.name, sub: m.code, value: Number(m.revenue) })) ?? []} />
         </section>
@@ -146,7 +147,7 @@ export function DashboardPage() {
       {data && data.topDebtors.length > 0 && (
         <section className="mt-4 rounded-xl border border-slate-200 bg-white p-4 lg:w-1/3">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <Wallet className="size-4 text-slate-400" /> Khách hàng nợ nhiều nhất
+            <Wallet className="size-4 text-slate-400" />{' '}{t('Khách hàng nợ nhiều nhất')}
           </h2>
           <RankList items={data.topDebtors.map((d) => ({ key: d.code, label: d.name, sub: d.code, value: Number(d.balance) }))} />
         </section>
@@ -186,14 +187,14 @@ function Todo({ icon, label, n, to }: { icon: ReactNode; label: string; n: numbe
 /** Danh sách xếp hạng có thanh tỉ lệ (thay cho biểu đồ cột khi chỉ có ≤ 5 mục). */
 function RankList({ items }: { items: { key: string; label: string; sub: string; value: number }[] }) {
   const max = Math.max(1, ...items.map((i) => i.value));
-  if (items.length === 0) return <p className="text-sm text-slate-500">Chưa có dữ liệu.</p>;
+  if (items.length === 0) return <p className="text-sm text-slate-500">{t('Chưa có dữ liệu.')}</p>;
   return (
     <ol className="space-y-3">
       {items.map((i) => (
         <li key={i.key} className="text-sm">
           <div className="flex justify-between gap-2">
             <span className="truncate">{i.label}</span>
-            <span className="shrink-0 font-medium tabular-nums">{short(i.value)} đ</span>
+            <span className="shrink-0 font-medium tabular-nums">{short(i.value)}{' '}{t('đ')}</span>
           </div>
           <div className="mt-1 h-1.5 rounded-full bg-slate-100">
             <div className="h-1.5 rounded-full bg-slate-400" style={{ width: `${(i.value / max) * 100}%` }} />
@@ -216,7 +217,7 @@ function TrendChart({ series }: { series: Dashboard['series'] }) {
     plugins: {
       legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8, color: '#475569' } },
       tooltip: {
-        callbacks: { label: (c) => `${c.dataset.label}: ${fmtMoney(c.parsed.y)} đ` },
+        callbacks: { label: (c) => `${c.dataset.label}: ${fmtMoney(c.parsed.y)} ${t('đ')}` },
       },
     },
     scales: {
@@ -233,12 +234,12 @@ function TrendChart({ series }: { series: Dashboard['series'] }) {
   return (
     <Line
       options={options}
-      aria-label="Biểu đồ doanh thu và giá trị nhập theo ngày"
+      aria-label={t('Biểu đồ doanh thu và giá trị nhập theo ngày')}
       data={{
         labels,
         datasets: [
-          { label: 'Doanh thu', data: series.map((s) => Number(s.revenue)), borderColor: SERIES.revenue, backgroundColor: SERIES.revenue },
-          { label: 'Giá trị nhập', data: series.map((s) => Number(s.purchase)), borderColor: SERIES.purchase, backgroundColor: SERIES.purchase },
+          { label: t('Doanh thu'), data: series.map((s) => Number(s.revenue)), borderColor: SERIES.revenue, backgroundColor: SERIES.revenue },
+          { label: t('Giá trị nhập'), data: series.map((s) => Number(s.purchase)), borderColor: SERIES.purchase, backgroundColor: SERIES.purchase },
         ],
       }}
     />

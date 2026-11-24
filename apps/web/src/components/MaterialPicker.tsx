@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { t } from '../i18n';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown } from 'lucide-react';
 import { api } from '../lib/api';
@@ -50,7 +51,7 @@ export function MaterialPicker({
               <span className="font-mono text-xs text-slate-500">{value.code}</span> {value.name}
             </>
           ) : (
-            'Chọn vật tư…'
+            t('Chọn vật tư…')
           )}
         </span>
         <ChevronDown className="size-4 shrink-0 text-slate-400" />
@@ -61,7 +62,7 @@ export function MaterialPicker({
             autoFocus
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Gõ mã hoặc tên vật tư…"
+            placeholder={t('Gõ mã hoặc tên vật tư…')}
             className="w-full border-b border-slate-200 px-3 py-2 text-sm outline-none"
           />
           <ul className="max-h-64 overflow-y-auto py-1">
@@ -84,9 +85,9 @@ export function MaterialPicker({
               </li>
             ))}
             {!isFetching && data?.items.length === 0 && (
-              <li className="px-3 py-2 text-sm text-slate-500">Không tìm thấy vật tư</li>
+              <li className="px-3 py-2 text-sm text-slate-500">{t('Không tìm thấy vật tư')}</li>
             )}
-            {isFetching && !data && <li className="px-3 py-2 text-sm text-slate-500">Đang tìm…</li>}
+            {isFetching && !data && <li className="px-3 py-2 text-sm text-slate-500">{t('Đang tìm…')}</li>}
           </ul>
         </div>
       )}

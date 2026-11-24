@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { t } from '../../i18n';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { api, ApiError, fieldErrors } from '../../lib/api';
@@ -71,7 +72,7 @@ export function PartnersPage({ config }: { config: Config }) {
         actions={
           canEdit && (
             <Button variant="primary" onClick={() => open(null)}>
-              <Plus className="size-4" /> Thêm {config.noun}
+              <Plus className="size-4" />{' '}{t('Thêm')}{' '}{t(config.noun)}
             </Button>
           )
         }
@@ -83,10 +84,10 @@ export function PartnersPage({ config }: { config: Config }) {
             setQ(v);
             setPage(1);
           }}
-          placeholder="Tìm mã, tên, MST, SĐT…"
+          placeholder={t('Tìm mã, tên, MST, SĐT…')}
         />
         <select
-          aria-label="Lọc theo trạng thái"
+          aria-label={t('Lọc theo trạng thái')}
           value={active}
           onChange={(e) => {
             setActive(e.target.value as 'true' | 'all');
@@ -94,12 +95,12 @@ export function PartnersPage({ config }: { config: Config }) {
           }}
           className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
         >
-          <option value="true">Đang giao dịch</option>
-          <option value="all">Tất cả</option>
+          <option value="true">{t('Đang giao dịch')}</option>
+          <option value="all">{t('Tất cả')}</option>
         </select>
       </div>
 
-      {error && <ErrorBanner message={`Không tải được danh sách ${config.noun}`} />}
+      {error && <ErrorBanner message={t('Không tải được danh sách {noun}', { noun: t(config.noun) })} />}
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <ul className="divide-y divide-slate-100">
@@ -108,25 +109,25 @@ export function PartnersPage({ config }: { config: Config }) {
               <button onClick={() => open(p)} className="min-w-0 flex-1 text-left">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-xs text-slate-500">{p.code}</span>
-                  {!p.isActive && <Badge>Ngừng giao dịch</Badge>}
+                  {!p.isActive && <Badge>{t('Ngừng giao dịch')}</Badge>}
                 </div>
                 <div className="font-medium">{p.name}</div>
                 <div className="mt-0.5 flex flex-wrap gap-x-4 text-xs text-slate-500">
-                  {p.taxCode && <span>MST: {p.taxCode}</span>}
-                  {p.phone && <span>SĐT: {p.phone}</span>}
+                  {p.taxCode && <span>{t('MST')}: {p.taxCode}</span>}
+                  {p.phone && <span>{t('SĐT:')}{' '}{p.phone}</span>}
                   {p.email && <span>{p.email}</span>}
                 </div>
               </button>
               {canEdit && (
                 <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => toggleActive.mutate(p)}>
-                  {p.isActive ? 'Ngừng' : 'Dùng lại'}
+                  {p.isActive ? t('Ngừng') : t('Dùng lại')}
                 </Button>
               )}
             </li>
           ))}
         </ul>
-        {isLoading && <EmptyState>Đang tải…</EmptyState>}
-        {data && data.items.length === 0 && <EmptyState>Không có {config.noun} phù hợp.</EmptyState>}
+        {isLoading && <EmptyState>{t('Đang tải…')}</EmptyState>}
+        {data && data.items.length === 0 && <EmptyState>{t('Không có')}{' '}{t(config.noun)}{' '}{t('phù hợp.')}</EmptyState>}
         {data && data.total > 0 && (
           <div className="border-t border-slate-100 px-3">
             <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={setPage} />
@@ -211,14 +212,14 @@ function PartnerFormModal({
   return (
     <Modal
       open={open}
-      title={readOnly ? `Thông tin ${config.noun}` : partner ? `Sửa ${config.noun} ${partner.code}` : `Thêm ${config.noun}`}
+      title={readOnly ? t('Thông tin {noun}', { noun: t(config.noun) }) : partner ? t('Sửa {noun} {code}', { noun: t(config.noun), code: partner.code }) : t('Thêm {noun}', { noun: t(config.noun) })}
       onClose={onClose}
       footer={
         <>
-          <Button onClick={onClose}>{readOnly ? 'Đóng' : 'Huỷ'}</Button>
+          <Button onClick={onClose}>{readOnly ? t('Đóng') : t('Huỷ')}</Button>
           {!readOnly && (
             <Button variant="primary" type="submit" form="partner-form" disabled={save.isPending}>
-              {save.isPending ? 'Đang lưu…' : 'Lưu'}
+              {save.isPending ? t('Đang lưu…') : t('Lưu')}
             </Button>
           )}
         </>
@@ -227,15 +228,15 @@ function PartnerFormModal({
       <form id="partner-form" onSubmit={onSubmit} noValidate>
         {general && <ErrorBanner message={general} />}
         <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2">
-          <TextInput label="Mã" required placeholder={config.codeHint} {...bind('code')} />
-          <TextInput label="Mã số thuế" inputMode="numeric" {...bind('taxCode')} />
+          <TextInput label={t('Mã')} required placeholder={t(config.codeHint)} {...bind('code')} />
+          <TextInput label={t('Mã số thuế')} inputMode="numeric" {...bind('taxCode')} />
           <div className="sm:col-span-2">
-            <TextInput label="Tên" required {...bind('name')} />
+            <TextInput label={t('Tên')} required {...bind('name')} />
           </div>
-          <TextInput label="Số điện thoại" type="tel" {...bind('phone')} />
+          <TextInput label={t('Số điện thoại')} type="tel" {...bind('phone')} />
           <TextInput label="Email" type="email" {...bind('email')} />
           <div className="sm:col-span-2">
-            <TextInput label="Địa chỉ" {...bind('address')} />
+            <TextInput label={t('Địa chỉ')} {...bind('address')} />
           </div>
         </fieldset>
       </form>

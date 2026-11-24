@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { t } from '../../i18n';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -75,22 +76,22 @@ export function PurchaseOrderFormPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <Link to={isEdit ? `/purchase-orders/${id}` : '/purchase-orders'} className="mb-2 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-        <ArrowLeft className="size-4" /> Quay lại
+        <ArrowLeft className="size-4" />{' '}{t('Quay lại')}
       </Link>
-      <PageHeader title={isEdit ? `Sửa đơn ${existing?.code ?? ''}` : 'Tạo đơn mua hàng'} />
+      <PageHeader title={isEdit ? t('Sửa đơn {code}', { code: existing?.code ?? '' }) : t('Tạo đơn mua hàng')} />
 
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         {general && <ErrorBanner message={general} />}
 
         <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
           <SelectInput
-            label="Nhà cung cấp"
+            label={t('Nhà cung cấp')}
             required
             value={header.supplierId}
             onChange={(e) => setHeader({ ...header, supplierId: e.target.value })}
             error={errors.supplierId}
           >
-            <option value="">— Chọn nhà cung cấp —</option>
+            <option value="">{t('— Chọn nhà cung cấp —')}</option>
             {suppliers?.items.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -98,7 +99,7 @@ export function PurchaseOrderFormPage() {
             ))}
           </SelectInput>
           <SelectInput
-            label="Kho nhận"
+            label={t('Kho nhận')}
             required
             value={header.warehouseId}
             onChange={(e) => setHeader({ ...header, warehouseId: e.target.value })}
@@ -111,21 +112,21 @@ export function PurchaseOrderFormPage() {
             ))}
           </SelectInput>
           <TextInput
-            label="Ngày dự kiến nhận"
+            label={t('Ngày dự kiến nhận')}
             type="date"
             value={header.expectedDate}
             onChange={(e) => setHeader({ ...header, expectedDate: e.target.value })}
             error={errors.expectedDate}
           />
-          <TextInput label="Ghi chú" value={header.note} onChange={(e) => setHeader({ ...header, note: e.target.value })} />
+          <TextInput label={t('Ghi chú')} value={header.note} onChange={(e) => setHeader({ ...header, note: e.target.value })} />
         </div>
 
-        <LinesEditor lines={lines} onChange={setLines} priceField="purchasePrice" title="Vật tư đặt mua" />
+        <LinesEditor lines={lines} onChange={setLines} priceField="purchasePrice" title={t('Vật tư đặt mua')} />
 
         <div className="flex justify-end gap-2">
-          <Button onClick={() => navigate(-1)}>Huỷ</Button>
+          <Button onClick={() => navigate(-1)}>{t('Huỷ')}</Button>
           <Button variant="primary" type="submit" disabled={save.isPending}>
-            {save.isPending ? 'Đang lưu…' : isEdit ? 'Lưu thay đổi' : 'Lưu đơn nháp'}
+            {save.isPending ? t('Đang lưu…') : isEdit ? t('Lưu thay đổi') : t('Lưu đơn nháp')}
           </Button>
         </div>
       </form>

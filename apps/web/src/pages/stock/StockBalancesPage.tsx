@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../../i18n';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { fmtMoney, fmtQty } from '../../lib/format';
@@ -65,13 +66,13 @@ export function StockBalancesPage() {
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
-        title="Tồn kho"
-        subtitle="Bấm vào một vật tư để xem thẻ kho"
+        title={t('Tồn kho')}
+        subtitle={t('Bấm vào một vật tư để xem thẻ kho')}
         actions={
           data && (
             <div className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-right">
-              <div className="text-xs text-slate-500">Giá trị tồn (giá mua)</div>
-              <div className="font-semibold tabular-nums">{fmtMoney(data.totalValue)} đ</div>
+              <div className="text-xs text-slate-500">{t('Giá trị tồn (giá mua)')}</div>
+              <div className="font-semibold tabular-nums">{fmtMoney(data.totalValue)}{' '}{t('đ')}</div>
             </div>
           )
         }
@@ -84,21 +85,21 @@ export function StockBalancesPage() {
           onChange={(e) => reset(setWarehouseId)(e.target.value)}
           className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
         >
-          <option value="">Tất cả kho</option>
+          <option value="">{t('Tất cả kho')}</option>
           {warehouses.map((w) => (
             <option key={w.id} value={w.id}>
               {w.name}
             </option>
           ))}
         </select>
-        <SearchBox value={q} onChange={reset(setQ)} placeholder="Tìm mã, tên vật tư…" />
+        <SearchBox value={q} onChange={reset(setQ)} placeholder={t('Tìm mã, tên vật tư…')} />
         <select
-          aria-label="Nhóm"
+          aria-label={t('Nhóm')}
           value={groupId}
           onChange={(e) => reset(setGroupId)(e.target.value)}
           className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
         >
-          <option value="">Tất cả nhóm</option>
+          <option value="">{t('Tất cả nhóm')}</option>
           {groups.map((g) => (
             <option key={g.id} value={g.id}>
               {g.name}
@@ -107,28 +108,28 @@ export function StockBalancesPage() {
         </select>
         <label className="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm">
           <input type="checkbox" checked={onlyInStock} onChange={(e) => reset(setOnlyInStock)(e.target.checked)} />
-          Chỉ mã còn hàng
+          {t('Chỉ mã còn hàng')}
         </label>
         {!warehouseId && (
           <label className="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm">
             <input type="checkbox" checked={lowStock} onChange={(e) => reset(setLowStock)(e.target.checked)} />
-            Dưới mức tối thiểu
+            {t('Dưới mức tối thiểu')}
           </label>
         )}
       </div>
 
-      {error && <ErrorBanner message="Không tải được tồn kho" />}
+      {error && <ErrorBanner message={t('Không tải được tồn kho')} />}
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <table className="hidden w-full text-sm md:table">
           <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
             <tr>
-              <th className="px-4 py-2.5">Mã</th>
-              <th className="px-4 py-2.5">Vật tư</th>
-              <th className="px-4 py-2.5">Nhóm</th>
-              <th className="px-4 py-2.5 text-right">Tồn</th>
-              <th className="px-4 py-2.5">ĐVT</th>
-              <th className="px-4 py-2.5 text-right">Giá trị</th>
+              <th className="px-4 py-2.5">{t('Mã')}</th>
+              <th className="px-4 py-2.5">{t('Vật tư')}</th>
+              <th className="px-4 py-2.5">{t('Nhóm')}</th>
+              <th className="px-4 py-2.5 text-right">{t('Tồn')}</th>
+              <th className="px-4 py-2.5">{t('ĐVT')}</th>
+              <th className="px-4 py-2.5 text-right">{t('Giá trị')}</th>
             </tr>
           </thead>
           <tbody>
@@ -157,7 +158,7 @@ export function StockBalancesPage() {
                 <div className="min-w-0">
                   <div className="font-mono text-xs text-slate-500">{r.code}</div>
                   <div className="font-medium">{r.name}</div>
-                  <div className="text-xs text-slate-500">{fmtMoney(r.value)} đ</div>
+                  <div className="text-xs text-slate-500">{fmtMoney(r.value)}{' '}{t('đ')}</div>
                 </div>
                 <div className="shrink-0 text-right">
                   <div className={`text-lg font-semibold tabular-nums ${isLow(r) ? 'text-red-600' : ''}`}>{fmtQty(r.quantity)}</div>
@@ -168,8 +169,8 @@ export function StockBalancesPage() {
           ))}
         </ul>
 
-        {isLoading && <EmptyState>Đang tải…</EmptyState>}
-        {data && data.items.length === 0 && <EmptyState>Không có vật tư phù hợp.</EmptyState>}
+        {isLoading && <EmptyState>{t('Đang tải…')}</EmptyState>}
+        {data && data.items.length === 0 && <EmptyState>{t('Không có vật tư phù hợp.')}</EmptyState>}
         {data && data.total > 0 && (
           <div className="border-t border-slate-100 px-3">
             <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={setPage} />

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../../i18n';
 import { Link } from 'react-router';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -78,8 +79,8 @@ export function SalesListPage({ kind }: { kind: keyof typeof config }) {
     return <Badge tone={soStatusTone[row.status]}>{soStatusLabel[row.status]}</Badge>;
   }
   function meta(row: Row) {
-    if ('quoteDate' in row) return `${fmtDate(row.quoteDate)}${row.validUntil ? ` · hiệu lực đến ${fmtDate(row.validUntil)}` : ''}`;
-    return `${fmtDate(row.orderDate)} · xuất từ ${row.warehouse.name}${row.deliveryDate ? ` · giao ${fmtDate(row.deliveryDate)}` : ''}`;
+    if ('quoteDate' in row) return `${fmtDate(row.quoteDate)}${row.validUntil ? t(' · hiệu lực đến {date}', { date: fmtDate(row.validUntil) }) : ''}`;
+    return `${fmtDate(row.orderDate)}${t(' · xuất từ {name}', { name: row.warehouse.name })}${row.deliveryDate ? t(' · giao {date}', { date: fmtDate(row.deliveryDate) }) : ''}`;
   }
 
   return (
@@ -91,7 +92,7 @@ export function SalesListPage({ kind }: { kind: keyof typeof config }) {
           canAccess(user, ['SALES']) && (
             <Link to={`${c.base}/new`}>
               <Button variant="primary">
-                <Plus className="size-4" /> {c.create}
+                <Plus className="size-4" /> {t(c.create)}
               </Button>
             </Link>
           )
@@ -104,7 +105,7 @@ export function SalesListPage({ kind }: { kind: keyof typeof config }) {
             setQ(v);
             setPage(1);
           }}
-          placeholder="Tìm số chứng từ, khách hàng…"
+          placeholder={t('Tìm số chứng từ, khách hàng…')}
         />
         <div className="flex flex-wrap gap-1">
           {c.filters.map((f) => (
@@ -118,13 +119,13 @@ export function SalesListPage({ kind }: { kind: keyof typeof config }) {
                 status === f.key ? 'border-teal-600 bg-teal-600 text-white' : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400'
               }`}
             >
-              {f.label}
+              {t(f.label)}
             </button>
           ))}
         </div>
       </div>
 
-      {error && <ErrorBanner message="Không tải được danh sách" />}
+      {error && <ErrorBanner message={t('Không tải được danh sách')} />}
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <ul className="divide-y divide-slate-100">
@@ -139,13 +140,13 @@ export function SalesListPage({ kind }: { kind: keyof typeof config }) {
                   <div className="truncate text-sm">{row.customer.name}</div>
                   <div className="text-xs text-slate-500">{meta(row)}</div>
                 </div>
-                <div className="font-semibold tabular-nums">{fmtMoney(row.totalAmount)} đ</div>
+                <div className="font-semibold tabular-nums">{fmtMoney(row.totalAmount)}{' '}{t('đ')}</div>
               </Link>
             </li>
           ))}
         </ul>
-        {isLoading && <EmptyState>Đang tải…</EmptyState>}
-        {data && data.items.length === 0 && <EmptyState>Chưa có dữ liệu phù hợp.</EmptyState>}
+        {isLoading && <EmptyState>{t('Đang tải…')}</EmptyState>}
+        {data && data.items.length === 0 && <EmptyState>{t('Chưa có dữ liệu phù hợp.')}</EmptyState>}
         {data && data.total > 0 && (
           <div className="border-t border-slate-100 px-3">
             <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={setPage} />

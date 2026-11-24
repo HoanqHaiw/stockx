@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { t } from '../../i18n';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { fmtDate, fmtMoney, fmtQty } from '../../lib/format';
@@ -22,46 +23,46 @@ export function StockDocumentModal({ id, onClose }: { id: number | null; onClose
   return (
     <Modal
       open={id !== null}
-      title={doc ? `${docTypeLabel[doc.type]} ${doc.code}` : 'Phiếu kho'}
+      title={doc ? `${t(docTypeLabel[doc.type])} ${doc.code}` : t('Phiếu kho')}
       onClose={onClose}
       wide
-      footer={<Button onClick={onClose}>Đóng</Button>}
+      footer={<Button onClick={onClose}>{t('Đóng')}</Button>}
     >
       {isLoading || !doc ? (
-        <p className="text-sm text-slate-500">Đang tải…</p>
+        <p className="text-sm text-slate-500">{t('Đang tải…')}</p>
       ) : (
         <>
           <div className="mb-4 grid gap-3 text-sm sm:grid-cols-3">
             <div>
-              <div className="text-xs text-slate-500">Ngày</div>
+              <div className="text-xs text-slate-500">{t('Ngày')}</div>
               <div className="font-medium">{fmtDate(doc.docDate)}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500">Kho</div>
+              <div className="text-xs text-slate-500">{t('Kho')}</div>
               <div className="font-medium">
                 {doc.warehouse.name}
                 {doc.toWarehouse && ` → ${doc.toWarehouse.name}`}
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500">Trạng thái</div>
-              {doc.status === 'POSTED' ? <Badge tone="green">Đã ghi sổ</Badge> : <Badge>{doc.status}</Badge>}
+              <div className="text-xs text-slate-500">{t('Trạng thái')}</div>
+              {doc.status === 'POSTED' ? <Badge tone="green">{t('Đã ghi sổ')}</Badge> : <Badge>{doc.status}</Badge>}
             </div>
             {doc.supplier && (
               <div>
-                <div className="text-xs text-slate-500">Nhà cung cấp</div>
+                <div className="text-xs text-slate-500">{t('Nhà cung cấp')}</div>
                 <div className="font-medium">{doc.supplier.name}</div>
               </div>
             )}
             {doc.customer && (
               <div>
-                <div className="text-xs text-slate-500">Khách hàng</div>
+                <div className="text-xs text-slate-500">{t('Khách hàng')}</div>
                 <div className="font-medium">{doc.customer.name}</div>
               </div>
             )}
             {doc.salesOrder && (
               <div>
-                <div className="text-xs text-slate-500">Theo đơn bán</div>
+                <div className="text-xs text-slate-500">{t('Theo đơn bán')}</div>
                 <Link to={`/sales-orders/${doc.salesOrder.id}`} onClick={onClose} className="font-medium text-teal-700 hover:underline">
                   {doc.salesOrder.code}
                 </Link>
@@ -69,14 +70,14 @@ export function StockDocumentModal({ id, onClose }: { id: number | null; onClose
             )}
             {doc.purchaseOrder && (
               <div>
-                <div className="text-xs text-slate-500">Theo đơn mua</div>
+                <div className="text-xs text-slate-500">{t('Theo đơn mua')}</div>
                 <Link to={`/purchase-orders/${doc.purchaseOrder.id}`} onClick={onClose} className="font-medium text-teal-700 hover:underline">
                   {doc.purchaseOrder.code}
                 </Link>
               </div>
             )}
             <div>
-              <div className="text-xs text-slate-500">Người lập / ghi sổ</div>
+              <div className="text-xs text-slate-500">{t('Người lập / ghi sổ')}</div>
               <div className="font-medium">
                 {doc.createdBy.fullName}
                 {doc.postedBy && doc.postedBy.fullName !== doc.createdBy.fullName && ` / ${doc.postedBy.fullName}`}
@@ -88,10 +89,10 @@ export function StockDocumentModal({ id, onClose }: { id: number | null; onClose
             <table className="w-full min-w-[480px] text-sm">
               <thead className="border-b border-slate-200 text-left text-xs text-slate-500">
                 <tr>
-                  <th className="py-2 pr-3">Vật tư</th>
-                  <th className="py-2 pr-3 text-right">Số lượng</th>
-                  <th className="py-2 pr-3 text-right">Quy đổi</th>
-                  <th className="py-2 text-right">Thành tiền</th>
+                  <th className="py-2 pr-3">{t('Vật tư')}</th>
+                  <th className="py-2 pr-3 text-right">{t('Số lượng')}</th>
+                  <th className="py-2 pr-3 text-right">{t('Quy đổi')}</th>
+                  <th className="py-2 text-right">{t('Thành tiền')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -107,7 +108,7 @@ export function StockDocumentModal({ id, onClose }: { id: number | null; onClose
                       {l.countedQty !== null ? (
                         // Phiếu kiểm kê: số lượng là chênh lệch, hiển thị kèm sổ sách → thực đếm.
                         <>
-                          sổ {fmtQty(l.bookQty)} → đếm {fmtQty(l.countedQty)}
+                          {t('sổ')}{' '}{fmtQty(l.bookQty)}{' '}{t('→ đếm')}{' '}{fmtQty(l.countedQty)}
                         </>
                       ) : (
                         <>
@@ -122,9 +123,9 @@ export function StockDocumentModal({ id, onClose }: { id: number | null; onClose
               <tfoot>
                 <tr>
                   <td colSpan={3} className="pt-3 text-right text-slate-500">
-                    Tổng
+                    {t('Tổng')}
                   </td>
-                  <td className="pt-3 text-right font-semibold tabular-nums">{fmtMoney(doc.totalAmount)} đ</td>
+                  <td className="pt-3 text-right font-semibold tabular-nums">{fmtMoney(doc.totalAmount)}{' '}{t('đ')}</td>
                 </tr>
               </tfoot>
             </table>

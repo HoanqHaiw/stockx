@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../../i18n';
 import { Link } from 'react-router';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -50,7 +51,7 @@ export function StockDocListPage({
           canAccess(user, ['WAREHOUSE']) && (
             <Link to={createTo}>
               <Button variant="primary">
-                <Plus className="size-4" /> {createLabel}
+                <Plus className="size-4" /> {t(createLabel)}
               </Button>
             </Link>
           )
@@ -63,7 +64,7 @@ export function StockDocListPage({
             setQ(v);
             setPage(1);
           }}
-          placeholder="Tìm số phiếu…"
+          placeholder={t('Tìm số phiếu…')}
         />
       </div>
       <div className="rounded-xl border border-slate-200 bg-white">
@@ -77,17 +78,17 @@ export function StockDocListPage({
                     {d.toWarehouse ? `${d.warehouse.name} → ${d.toWarehouse.name}` : d.warehouse.name}
                   </div>
                   <div className="text-xs text-slate-500">
-                    {fmtDate(d.docDate)} · {d._count.lines} dòng · {d.createdBy.fullName}
+                    {fmtDate(d.docDate)} · {d._count.lines}{' '}{t('dòng ·')}{' '}{d.createdBy.fullName}
                     {d.note && ` · ${d.note}`}
                   </div>
                 </div>
-                <span className={`tabular-nums ${Number(d.totalAmount) < 0 ? 'text-red-600' : ''}`}>{fmtMoney(d.totalAmount)} đ</span>
+                <span className={`tabular-nums ${Number(d.totalAmount) < 0 ? 'text-red-600' : ''}`}>{fmtMoney(d.totalAmount)}{' '}{t('đ')}</span>
               </button>
             </li>
           ))}
         </ul>
-        {isLoading && <EmptyState>Đang tải…</EmptyState>}
-        {data && data.items.length === 0 && <EmptyState>Chưa có phiếu nào.</EmptyState>}
+        {isLoading && <EmptyState>{t('Đang tải…')}</EmptyState>}
+        {data && data.items.length === 0 && <EmptyState>{t('Chưa có phiếu nào.')}</EmptyState>}
         {data && data.total > 0 && (
           <div className="border-t border-slate-100 px-3">
             <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={setPage} />

@@ -28,8 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // API trả 401 ở bất kỳ đâu thì đăng xuất.
   useEffect(() => {
     const onLogout = () => setUser(null);
-    window.addEventListener('vattu-hub:logout', onLogout);
-    return () => window.removeEventListener('vattu-hub:logout', onLogout);
+    window.addEventListener('justin-stock:logout', onLogout);
+    return () => window.removeEventListener('justin-stock:logout', onLogout);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

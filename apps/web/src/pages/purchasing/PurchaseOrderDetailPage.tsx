@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../../i18n';
 import { Link, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Ban, CheckCircle2, PackagePlus, Pencil } from 'lucide-react';
@@ -33,8 +34,8 @@ export function PurchaseOrderDetailPage() {
     },
   });
 
-  if (isLoading) return <p className="text-sm text-slate-500">Đang tải…</p>;
-  if (error || !po) return <ErrorBanner message="Không tải được đơn mua hàng" />;
+  if (isLoading) return <p className="text-sm text-slate-500">{t('Đang tải…')}</p>;
+  if (error || !po) return <ErrorBanner message={t('Không tải được đơn mua hàng')} />;
 
   const isDraft = po.status === 'DRAFT';
   const canReceive = (po.status === 'APPROVED' || po.status === 'PARTIALLY_RECEIVED') && canAccess(user, ['WAREHOUSE']);
@@ -43,17 +44,17 @@ export function PurchaseOrderDetailPage() {
   const canCancel = (isDraft || po.status === 'APPROVED') && canAccess(user, ['PURCHASING']);
 
   function onCancel() {
-    if (window.confirm(`Huỷ đơn ${po!.code}? Đơn đã huỷ không thể khôi phục.`)) action.mutate('cancel');
+    if (window.confirm(t('Huỷ đơn {code}? Đơn đã huỷ không thể khôi phục.', { code: po!.code }))) action.mutate('cancel');
   }
   function onReceived(doc: StockDocument) {
     setReceiveOpen(false);
-    setFlash(`Đã ghi sổ phiếu nhập ${doc.code}`);
+    setFlash(t('Đã ghi sổ phiếu nhập {code}', { code: doc.code }));
   }
 
   return (
     <div className="mx-auto max-w-6xl">
       <Link to="/purchase-orders" className="mb-2 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-        <ArrowLeft className="size-4" /> Đơn mua hàng
+        <ArrowLeft className="size-4" />{' '}{t('Đơn mua hàng')}
       </Link>
 
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -63,31 +64,31 @@ export function PurchaseOrderDetailPage() {
             <Badge tone={poStatusTone[po.status]}>{poStatusLabel[po.status]}</Badge>
           </div>
           <p className="text-sm text-slate-500">
-            Lập ngày {fmtDate(po.orderDate)} bởi {po.createdBy.fullName}
-            {po.approvedBy && ` · Duyệt bởi ${po.approvedBy.fullName} ngày ${fmtDate(po.approvedAt)}`}
+            {t('Lập ngày')}{' '}{fmtDate(po.orderDate)}{' '}{t('bởi')}{' '}{po.createdBy.fullName}
+            {po.approvedBy && t(' · Duyệt bởi {name} ngày {date}', { name: po.approvedBy.fullName, date: fmtDate(po.approvedAt) })}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {canEdit && (
             <Link to={`/purchase-orders/${po.id}/edit`}>
               <Button>
-                <Pencil className="size-4" /> Sửa
+                <Pencil className="size-4" />{' '}{t('Sửa')}
               </Button>
             </Link>
           )}
           {canCancel && (
             <Button variant="danger" onClick={onCancel} disabled={action.isPending}>
-              <Ban className="size-4" /> Huỷ đơn
+              <Ban className="size-4" />{' '}{t('Huỷ đơn')}
             </Button>
           )}
           {canApprove && (
             <Button variant="primary" onClick={() => action.mutate('approve')} disabled={action.isPending}>
-              <CheckCircle2 className="size-4" /> Duyệt đơn
+              <CheckCircle2 className="size-4" />{' '}{t('Duyệt đơn')}
             </Button>
           )}
           {canReceive && (
             <Button variant="primary" onClick={() => setReceiveOpen(true)}>
-              <PackagePlus className="size-4" /> Nhập kho
+              <PackagePlus className="size-4" />{' '}{t('Nhập kho')}
             </Button>
           )}
         </div>
@@ -100,19 +101,19 @@ export function PurchaseOrderDetailPage() {
         </p>
       )}
       {isDraft && !canApprove && (
-        <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">Đơn nháp đang chờ quản trị viên duyệt.</p>
+        <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">{t('Đơn nháp đang chờ quản trị viên duyệt.')}</p>
       )}
 
       <div className="mb-4 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-        <Info label="Nhà cung cấp" value={po.supplier.name} sub={po.supplier.taxCode ? `MST ${po.supplier.taxCode}` : undefined} />
-        <Info label="Kho nhận" value={po.warehouse.name} />
-        <Info label="Ngày dự kiến nhận" value={fmtDate(po.expectedDate)} />
-        <Info label="Tổng tiền" value={`${fmtMoney(po.totalAmount)} đ`} />
-        {po.note && <Info label="Ghi chú" value={po.note} wide />}
+        <Info label={t('Nhà cung cấp')} value={po.supplier.name} sub={po.supplier.taxCode ? `MST ${po.supplier.taxCode}` : undefined} />
+        <Info label={t('Kho nhận')} value={po.warehouse.name} />
+        <Info label={t('Ngày dự kiến nhận')} value={fmtDate(po.expectedDate)} />
+        <Info label={t('Tổng tiền')} value={`${fmtMoney(po.totalAmount)} ${t('đ')}`} />
+        {po.note && <Info label={t('Ghi chú')} value={po.note} wide />}
       </div>
 
-      <LinesTable lines={po.lines} progressLabel="Đã nhận" progressOf={(l) => Number((l as PurchaseOrder['lines'][number]).receivedBaseQty)} />
-      <DocHistory title="Phiếu nhập kho" empty="Chưa nhập kho lần nào." docs={po.stockDocuments} onOpen={setViewDocId} />
+      <LinesTable lines={po.lines} progressLabel={t('Đã nhận')} progressOf={(l) => Number((l as PurchaseOrder['lines'][number]).receivedBaseQty)} />
+      <DocHistory title={t('Phiếu nhập kho')} empty={t('Chưa nhập kho lần nào.')} docs={po.stockDocuments} onOpen={setViewDocId} />
 
       <ReceiveModal po={po} open={receiveOpen} onClose={() => setReceiveOpen(false)} onDone={onReceived} />
       <StockDocumentModal id={viewDocId} onClose={() => setViewDocId(null)} />

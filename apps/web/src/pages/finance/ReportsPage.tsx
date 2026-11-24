@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../../i18n';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
 import { api, downloadFile } from '../../lib/api';
@@ -39,32 +40,32 @@ export function ReportsPage() {
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
-        title="Báo cáo nhập – xuất – tồn"
+        title={t('Báo cáo nhập – xuất – tồn')}
         subtitle={
           warehouseId
-            ? 'Theo một kho: chuyển kho được tính là nhập/xuất của kho'
-            : 'Tất cả kho: không tính chuyển kho nội bộ (không làm đổi tổng tồn)'
+            ? t('Theo một kho: chuyển kho được tính là nhập/xuất của kho')
+            : t('Tất cả kho: không tính chuyển kho nội bộ (không làm đổi tổng tồn)')
         }
         actions={
           <Button disabled={!valid} onClick={() => void downloadFile(`/reports/inventory-movement/excel?${params}`, 'nhap-xuat-ton.xlsx')}>
-            <Download className="size-4" /> Xuất Excel
+            <Download className="size-4" />{' '}{t('Xuất Excel')}
           </Button>
         }
       />
 
       <div className="mb-3 flex flex-wrap items-end gap-2">
         <label className="text-sm">
-          <span className="mb-1 block text-xs text-slate-500">Từ ngày</span>
+          <span className="mb-1 block text-xs text-slate-500">{t('Từ ngày')}</span>
           <input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className="rounded-md border border-slate-300 bg-white px-3 py-2" />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block text-xs text-slate-500">Đến ngày</span>
+          <span className="mb-1 block text-xs text-slate-500">{t('Đến ngày')}</span>
           <input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="rounded-md border border-slate-300 bg-white px-3 py-2" />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block text-xs text-slate-500">Kho</span>
+          <span className="mb-1 block text-xs text-slate-500">{t('Kho')}</span>
           <select value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)} className="rounded-md border border-slate-300 bg-white px-3 py-2">
-            <option value="">Tất cả kho</option>
+            <option value="">{t('Tất cả kho')}</option>
             {warehouses.map((w) => (
               <option key={w.id} value={w.id}>
                 {w.name}
@@ -74,27 +75,27 @@ export function ReportsPage() {
         </label>
         {data && (
           <div className="ml-auto rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-right">
-            <div className="text-xs text-slate-500">Giá trị tồn cuối kỳ</div>
-            <div className="font-semibold tabular-nums">{fmtMoney(data.totalClosingValue)} đ</div>
+            <div className="text-xs text-slate-500">{t('Giá trị tồn cuối kỳ')}</div>
+            <div className="font-semibold tabular-nums">{fmtMoney(data.totalClosingValue)}{' '}{t('đ')}</div>
           </div>
         )}
       </div>
 
-      {!valid && <ErrorBanner message="Ngày bắt đầu phải trước hoặc bằng ngày kết thúc" />}
-      {error && <ErrorBanner message="Không tải được báo cáo" />}
+      {!valid && <ErrorBanner message={t('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc')} />}
+      {error && <ErrorBanner message={t('Không tải được báo cáo')} />}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
             <tr>
-              <th className="px-4 py-2.5">Mã</th>
-              <th className="px-4 py-2.5">Vật tư</th>
-              <th className="px-4 py-2.5">ĐVT</th>
-              <th className="px-4 py-2.5 text-right">Tồn đầu</th>
-              <th className="px-4 py-2.5 text-right">Nhập</th>
-              <th className="px-4 py-2.5 text-right">Xuất</th>
-              <th className="px-4 py-2.5 text-right">Tồn cuối</th>
-              <th className="px-4 py-2.5 text-right">Giá trị tồn cuối</th>
+              <th className="px-4 py-2.5">{t('Mã')}</th>
+              <th className="px-4 py-2.5">{t('Vật tư')}</th>
+              <th className="px-4 py-2.5">{t('ĐVT')}</th>
+              <th className="px-4 py-2.5 text-right">{t('Tồn đầu')}</th>
+              <th className="px-4 py-2.5 text-right">{t('Nhập')}</th>
+              <th className="px-4 py-2.5 text-right">{t('Xuất')}</th>
+              <th className="px-4 py-2.5 text-right">{t('Tồn cuối')}</th>
+              <th className="px-4 py-2.5 text-right">{t('Giá trị tồn cuối')}</th>
             </tr>
           </thead>
           <tbody>
@@ -115,7 +116,7 @@ export function ReportsPage() {
             <tfoot className="border-t border-slate-200 bg-slate-50 font-semibold">
               <tr>
                 <td colSpan={4} className="px-4 py-2.5">
-                  Tổng ({data.items.length} mã)
+                  {t('Tổng (')}{data.items.length}{' '}{t('mã)')}
                 </td>
                 {/* Các mã khác đơn vị tính nên không cộng số lượng, chỉ cộng giá trị */}
                 <td colSpan={3} />
@@ -124,8 +125,8 @@ export function ReportsPage() {
             </tfoot>
           )}
         </table>
-        {isLoading && <EmptyState>Đang tải…</EmptyState>}
-        {data && data.items.length === 0 && <EmptyState>Không có phát sinh trong kỳ.</EmptyState>}
+        {isLoading && <EmptyState>{t('Đang tải…')}</EmptyState>}
+        {data && data.items.length === 0 && <EmptyState>{t('Không có phát sinh trong kỳ.')}</EmptyState>}
       </div>
     </div>
   );

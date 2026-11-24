@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '../../i18n';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
@@ -79,14 +80,14 @@ export function DeliverModal({
   return (
     <Modal
       open={open}
-      title={`Xuất kho giao đơn ${so.code}`}
+      title={t('Xuất kho giao đơn {code}', { code: so.code })}
       onClose={onClose}
       wide
       footer={
         <>
-          <Button onClick={onClose}>Huỷ</Button>
+          <Button onClick={onClose}>{t('Huỷ')}</Button>
           <Button variant="primary" disabled={submit.isPending} onClick={() => submit.mutate()}>
-            {submit.isPending ? 'Đang ghi sổ…' : 'Xác nhận xuất kho'}
+            {submit.isPending ? t('Đang ghi sổ…') : t('Xác nhận xuất kho')}
           </Button>
         </>
       }
@@ -99,14 +100,14 @@ export function DeliverModal({
             const base = l?.material.baseUnit.name.toLowerCase() ?? '';
             return (
               <li key={s.materialCode}>
-                <b>{s.materialCode}</b>: cần {fmtQty(s.required)} {base}, kho chỉ còn {fmtQty(s.available)} {base}
+                <b>{s.materialCode}</b>{t(': cần')}{' '}{fmtQty(s.required)} {base}{t(', kho chỉ còn')}{' '}{fmtQty(s.available)} {base}
               </li>
             );
           })}
         </ul>
       )}
       <p className="mb-3 text-sm text-slate-600">
-        Xuất từ <b>{so.warehouse.name}</b> cho <b>{so.customer.name}</b>. Số gợi ý là tối đa có thể giao theo tồn hiện tại.
+        {t('Xuất từ')}{' '}<b>{so.warehouse.name}</b> {t('cho')} <b>{so.customer.name}</b>{t('. Số gợi ý là tối đa có thể giao theo tồn hiện tại.')}
       </p>
       <div className="divide-y divide-slate-100 rounded-md border border-slate-200">
         {pending.map((l) => {
@@ -120,16 +121,16 @@ export function DeliverModal({
                 <div className="font-mono text-xs text-slate-500">{l.material.code}</div>
                 <div className="text-sm font-medium">{l.material.name}</div>
                 <div className="text-xs text-slate-500">
-                  Đặt {fmtQty(l.quantity)} · còn phải giao {fmtQty(remainingInUnit(l))} {unit}
+                  {t('Đặt')}{' '}{fmtQty(l.quantity)}{' '}{t('· còn phải giao')}{' '}{fmtQty(remainingInUnit(l))} {unit}
                 </div>
                 <div className={`text-xs ${short ? 'font-medium text-red-600' : 'text-slate-500'}`}>
                   {short && <AlertTriangle className="mr-1 inline size-3" />}
-                  Tồn kho: {available === undefined ? '…' : `${fmtQty(available)} ${l.material.baseUnit.name.toLowerCase()}`}
+                  {t('Tồn kho:')}{' '}{available === undefined ? '…' : `${fmtQty(available)} ${l.material.baseUnit.name.toLowerCase()}`}
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <input
-                  aria-label={`Số giao ${l.material.code}`}
+                  aria-label={t('Số giao {code}', { code: l.material.code })}
                   type="number"
                   inputMode="decimal"
                   min={0}
@@ -145,7 +146,7 @@ export function DeliverModal({
         })}
       </div>
       <div className="mt-3">
-        <TextInput label="Ghi chú" value={note} onChange={(e) => setNote(e.target.value)} placeholder="VD: Giao bằng xe 29C-123.45, người nhận anh Nam" />
+        <TextInput label={t('Ghi chú')} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('VD: Giao bằng xe 29C-123.45, người nhận anh Nam')} />
       </div>
     </Modal>
   );

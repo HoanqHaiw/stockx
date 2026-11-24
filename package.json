@@ -1,5 +1,5 @@
 {
-  "name": "vattu-hub",
+  "name": "justin-stock",
   "private": true,
   "workspaces": [
     "apps/api",

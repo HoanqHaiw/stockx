@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '../../i18n';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { fmtDate, fmtQty } from '../../lib/format';
@@ -64,14 +65,14 @@ export function StockCardModal({
     <>
       <Modal
         open={materialId !== null}
-        title={data ? `Thẻ kho – ${data.material.code} ${data.material.name}` : 'Thẻ kho'}
+        title={data ? t('Thẻ kho – {code} {name}', { code: data.material.code, name: data.material.name }) : t('Thẻ kho')}
         onClose={onClose}
         wide
-        footer={<Button onClick={onClose}>Đóng</Button>}
+        footer={<Button onClick={onClose}>{t('Đóng')}</Button>}
       >
         <div className="mb-4 grid gap-2 sm:grid-cols-3">
           <label className="text-sm">
-            <span className="mb-1 block text-xs text-slate-500">Kho</span>
+            <span className="mb-1 block text-xs text-slate-500">{t('Kho')}</span>
             <select
               value={warehouseId ?? ''}
               onChange={(e) => setWarehouseId(Number(e.target.value))}
@@ -85,25 +86,25 @@ export function StockCardModal({
             </select>
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-xs text-slate-500">Từ ngày</span>
+            <span className="mb-1 block text-xs text-slate-500">{t('Từ ngày')}</span>
             <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full rounded-md border border-slate-300 px-2 py-2" />
           </label>
           <label className="text-sm">
-            <span className="mb-1 block text-xs text-slate-500">Đến ngày</span>
+            <span className="mb-1 block text-xs text-slate-500">{t('Đến ngày')}</span>
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full rounded-md border border-slate-300 px-2 py-2" />
           </label>
         </div>
 
         {isLoading || !data ? (
-          <p className="text-sm text-slate-500">Đang tải…</p>
+          <p className="text-sm text-slate-500">{t('Đang tải…')}</p>
         ) : (
           <>
             <div className="mb-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
               {[
-                ['Tồn đầu kỳ', data.opening, ''],
-                ['Tổng nhập', data.totalIn, 'text-emerald-700'],
-                ['Tổng xuất', data.totalOut, 'text-red-700'],
-                ['Tồn cuối kỳ', data.closing, 'font-semibold'],
+                [t('Tồn đầu kỳ'), data.opening, ''],
+                [t('Tổng nhập'), data.totalIn, 'text-emerald-700'],
+                [t('Tổng xuất'), data.totalOut, 'text-red-700'],
+                [t('Tồn cuối kỳ'), data.closing, 'font-semibold'],
               ].map(([label, v, cls]) => (
                 <div key={label} className="rounded-md bg-slate-50 px-3 py-2">
                   <div className="text-xs text-slate-500">{label}</div>
@@ -114,18 +115,18 @@ export function StockCardModal({
               ))}
             </div>
             {data.rows.length === 0 ? (
-              <p className="py-6 text-center text-sm text-slate-500">Không có phát sinh trong kỳ.</p>
+              <p className="py-6 text-center text-sm text-slate-500">{t('Không có phát sinh trong kỳ.')}</p>
             ) : (
               <div className="max-h-[50vh] overflow-auto rounded-md border border-slate-200">
                 <table className="w-full min-w-[520px] text-sm">
                   <thead className="sticky top-0 bg-slate-50 text-left text-xs text-slate-500">
                     <tr>
-                      <th className="px-3 py-2">Ngày</th>
-                      <th className="px-3 py-2">Chứng từ</th>
-                      <th className="px-3 py-2">Diễn giải</th>
-                      <th className="px-3 py-2 text-right">Nhập</th>
-                      <th className="px-3 py-2 text-right">Xuất</th>
-                      <th className="px-3 py-2 text-right">Tồn</th>
+                      <th className="px-3 py-2">{t('Ngày')}</th>
+                      <th className="px-3 py-2">{t('Chứng từ')}</th>
+                      <th className="px-3 py-2">{t('Diễn giải')}</th>
+                      <th className="px-3 py-2 text-right">{t('Nhập')}</th>
+                      <th className="px-3 py-2 text-right">{t('Xuất')}</th>
+                      <th className="px-3 py-2 text-right">{t('Tồn')}</th>
                     </tr>
                   </thead>
                   <tbody>

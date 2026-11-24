@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { t } from '../i18n';
 import { fmtDate, fmtMoney, fmtQty, unitOf } from '../lib/format';
 import type { OrderLine } from '../lib/types';
 
@@ -31,10 +32,10 @@ export function LinesTable({
       <table className="hidden w-full text-sm md:table">
         <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
           <tr>
-            <th className="px-4 py-2.5">Vật tư</th>
-            <th className="px-4 py-2.5 text-right">Số lượng</th>
-            <th className="px-4 py-2.5 text-right">Đơn giá</th>
-            <th className="px-4 py-2.5 text-right">Thành tiền</th>
+            <th className="px-4 py-2.5">{t('Vật tư')}</th>
+            <th className="px-4 py-2.5 text-right">{t('Số lượng')}</th>
+            <th className="px-4 py-2.5 text-right">{t('Đơn giá')}</th>
+            <th className="px-4 py-2.5 text-right">{t('Thành tiền')}</th>
             {progressOf && <th className="px-4 py-2.5">{progressLabel}</th>}
           </tr>
         </thead>
@@ -72,7 +73,7 @@ export function LinesTable({
               <div className="font-medium">{l.material.name}</div>
               <div className="mt-1 flex justify-between text-slate-600">
                 <span className="tabular-nums">
-                  {fmtQty(l.quantity)} {unit} × {fmtMoney(l.unitPrice)}
+                  {fmtQty(l.quantity)} {unit}{' '}{t('×')}{' '}{fmtMoney(l.unitPrice)}
                 </span>
                 <span className="font-medium tabular-nums">{fmtMoney(l.amount)}</span>
               </div>
@@ -132,7 +133,7 @@ export function DocHistory({
                     {fmtDate(d.docDate)} · {d.createdBy.fullName}
                   </div>
                 </div>
-                <span className="tabular-nums">{fmtMoney(d.totalAmount)} đ</span>
+                <span className="tabular-nums">{fmtMoney(d.totalAmount)}{' '}{t('đ')}</span>
               </button>
             </li>
           ))}

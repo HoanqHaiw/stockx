@@ -1,4 +1,4 @@
-// VatTu Hub – Mini ERP quản lý vật tư & kho
+// Justin Stock – Mini ERP quản lý vật tư & kho
 // Quy ước:
 // - Số lượng lưu Decimal(18,3), tiền lưu Decimal(18,2).
 // - Mọi biến động tồn kho đi qua StockLedger (chỉ thêm, không sửa/xoá).

@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { t } from '../i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MapPin, Plus } from 'lucide-react';
 import { api, ApiError, fieldErrors } from '../lib/api';
@@ -26,7 +27,7 @@ export function WarehousesPage() {
     <div className="mx-auto max-w-5xl">
       <PageHeader
         title="Kho"
-        subtitle={isAdmin ? undefined : 'Chỉ quản trị viên được thêm hoặc sửa kho'}
+        subtitle={isAdmin ? undefined : t('Chỉ quản trị viên được thêm hoặc sửa kho')}
         actions={
           isAdmin && (
             <Button
@@ -36,13 +37,13 @@ export function WarehousesPage() {
                 setFormOpen(true);
               }}
             >
-              <Plus className="size-4" /> Thêm kho
+              <Plus className="size-4" />{' '}{t('Thêm kho')}
             </Button>
           )
         }
       />
       {toggle.error instanceof ApiError && <ErrorBanner message={toggle.error.message} />}
-      {isLoading && <p className="text-sm text-slate-500">Đang tải…</p>}
+      {isLoading && <p className="text-sm text-slate-500">{t('Đang tải…')}</p>}
       <div className="grid gap-3 sm:grid-cols-2">
         {data.map((w) => (
           <div key={w.id} className={`rounded-xl border bg-white p-4 ${w.isActive ? 'border-slate-200' : 'border-dashed border-slate-300 opacity-70'}`}>
@@ -53,7 +54,7 @@ export function WarehousesPage() {
               </div>
               <div className="flex gap-1">
                 <Badge tone={w.type === 'MAIN' ? 'teal' : 'amber'}>{typeLabel[w.type]}</Badge>
-                {!w.isActive && <Badge>Ngừng</Badge>}
+                {!w.isActive && <Badge>{t('Ngừng')}</Badge>}
               </div>
             </div>
             {w.address && (
@@ -70,10 +71,10 @@ export function WarehousesPage() {
                     setFormOpen(true);
                   }}
                 >
-                  Sửa
+                  {t('Sửa')}
                 </Button>
                 <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => toggle.mutate(w)}>
-                  {w.isActive ? 'Ngừng sử dụng' : 'Dùng lại'}
+                  {w.isActive ? t('Ngừng sử dụng') : t('Dùng lại')}
                 </Button>
               </div>
             )}
@@ -122,26 +123,26 @@ function WarehouseFormModal({ open, warehouse, onClose }: { open: boolean; wareh
   return (
     <Modal
       open={open}
-      title={warehouse ? `Sửa kho ${warehouse.code}` : 'Thêm kho'}
+      title={warehouse ? t('Sửa kho {code}', { code: warehouse.code }) : t('Thêm kho')}
       onClose={onClose}
       footer={
         <>
-          <Button onClick={onClose}>Huỷ</Button>
+          <Button onClick={onClose}>{t('Huỷ')}</Button>
           <Button variant="primary" type="submit" form="warehouse-form" disabled={save.isPending}>
-            Lưu
+            {t('Lưu')}
           </Button>
         </>
       }
     >
       <form id="warehouse-form" onSubmit={onSubmit} noValidate className="grid gap-4">
         {save.error instanceof ApiError && Object.keys(errors).length === 0 && <ErrorBanner message={save.error.message} />}
-        <TextInput label="Mã kho" required value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} error={errors.code} />
-        <TextInput label="Tên kho" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} />
-        <SelectInput label="Loại kho" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as Warehouse['type'] })}>
-          <option value="MAIN">Kho tổng</option>
-          <option value="SITE">Kho công trình</option>
+        <TextInput label={t('Mã kho')} required value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} error={errors.code} />
+        <TextInput label={t('Tên kho')} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} />
+        <SelectInput label={t('Loại kho')} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as Warehouse['type'] })}>
+          <option value="MAIN">{t('Kho tổng')}</option>
+          <option value="SITE">{t('Kho công trình')}</option>
         </SelectInput>
-        <TextInput label="Địa chỉ" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} error={errors.address} />
+        <TextInput label={t('Địa chỉ')} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} error={errors.address} />
       </form>
     </Modal>
   );

@@ -1,4 +1,4 @@
-const TOKEN_KEY = 'vattu-hub.token';
+const TOKEN_KEY = 'justin-stock.token';
 
 export const tokenStore = {
   get: () => {
@@ -60,7 +60,7 @@ export async function api<T>(
 
   if (res.status === 401 && token) {
     tokenStore.clear();
-    window.dispatchEvent(new Event('vattu-hub:logout'));
+    window.dispatchEvent(new Event('justin-stock:logout'));
   }
   if (!res.ok && !init.okStatuses?.includes(res.status)) {
     const data = await res.json().catch(() => null);

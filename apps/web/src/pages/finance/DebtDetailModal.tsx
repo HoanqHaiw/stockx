@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '../../i18n';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { HandCoins } from 'lucide-react';
 import { api, ApiError, fieldErrors } from '../../lib/api';
@@ -40,32 +41,32 @@ export function DebtDetailModal({ kind, partnerId, onClose }: { kind: PartnerKin
     <>
       <Modal
         open={partnerId !== null}
-        title={data ? `Công nợ – ${data.partner.name}` : 'Công nợ'}
+        title={data ? t('Công nợ – {name}', { name: data.partner.name }) : t('Công nợ')}
         onClose={onClose}
         wide
         footer={
           <>
-            <Button onClick={onClose}>Đóng</Button>
+            <Button onClick={onClose}>{t('Đóng')}</Button>
             {canPay && (
               <Button variant="primary" onClick={() => setPayOpen(true)}>
-                <HandCoins className="size-4" /> {kind === 'customer' ? 'Ghi nhận thu tiền' : 'Ghi nhận trả tiền'}
+                <HandCoins className="size-4" /> {kind === 'customer' ? t('Ghi nhận thu tiền') : t('Ghi nhận trả tiền')}
               </Button>
             )}
           </>
         }
       >
         {isLoading || !data ? (
-          <p className="text-sm text-slate-500">Đang tải…</p>
+          <p className="text-sm text-slate-500">{t('Đang tải…')}</p>
         ) : (
           <>
             <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
               <div className="rounded-md bg-slate-50 px-3 py-2">
-                <div className="text-xs text-slate-500">Còn nợ</div>
-                <div className="font-semibold tabular-nums">{fmtMoney(data.balance)} đ</div>
+                <div className="text-xs text-slate-500">{t('Còn nợ')}</div>
+                <div className="font-semibold tabular-nums">{fmtMoney(data.balance)}{' '}{t('đ')}</div>
               </div>
               {agingCols.map((c) => (
                 <div key={c.key} className="rounded-md bg-slate-50 px-3 py-2">
-                  <div className="text-xs text-slate-500">{c.label}</div>
+                  <div className="text-xs text-slate-500">{t(c.label)}</div>
                   <div className={`tabular-nums ${Number(data.aging[c.key]) > 0 ? c.tone : 'text-slate-400'}`}>
                     {fmtMoney(data.aging[c.key])}
                   </div>
@@ -76,12 +77,12 @@ export function DebtDetailModal({ kind, partnerId, onClose }: { kind: PartnerKin
               <table className="w-full min-w-[560px] text-sm">
                 <thead className="sticky top-0 bg-slate-50 text-left text-xs text-slate-500">
                   <tr>
-                    <th className="px-3 py-2">Ngày</th>
-                    <th className="px-3 py-2">Chứng từ</th>
-                    <th className="px-3 py-2">Diễn giải</th>
-                    <th className="px-3 py-2 text-right">Phát sinh</th>
-                    <th className="px-3 py-2 text-right">Thanh toán</th>
-                    <th className="px-3 py-2 text-right">Số dư</th>
+                    <th className="px-3 py-2">{t('Ngày')}</th>
+                    <th className="px-3 py-2">{t('Chứng từ')}</th>
+                    <th className="px-3 py-2">{t('Diễn giải')}</th>
+                    <th className="px-3 py-2 text-right">{t('Phát sinh')}</th>
+                    <th className="px-3 py-2 text-right">{t('Thanh toán')}</th>
+                    <th className="px-3 py-2 text-right">{t('Số dư')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -171,44 +172,44 @@ function PaymentModal({
   return (
     <Modal
       open={open}
-      title={kind === 'customer' ? 'Phiếu thu tiền khách hàng' : 'Phiếu chi trả nhà cung cấp'}
+      title={kind === 'customer' ? t('Phiếu thu tiền khách hàng') : t('Phiếu chi trả nhà cung cấp')}
       onClose={onClose}
       footer={
         <>
-          <Button onClick={onClose}>Huỷ</Button>
+          <Button onClick={onClose}>{t('Huỷ')}</Button>
           <Button variant="primary" disabled={save.isPending} onClick={() => save.mutate()}>
-            {save.isPending ? 'Đang ghi…' : 'Ghi nhận'}
+            {save.isPending ? t('Đang ghi…') : t('Ghi nhận')}
           </Button>
         </>
       }
     >
       {save.error instanceof ApiError && Object.keys(errors).length === 0 && <ErrorBanner message={save.error.message} />}
       <p className="mb-4 text-sm text-slate-600">
-        {partner.name} đang {kind === 'customer' ? 'nợ' : 'được nợ'} <b>{fmtMoney(balance)} đ</b>.
+        {partner.name}{' '}{t('đang')}{' '}{kind === 'customer' ? t('nợ') : t('được nợ')} <b>{fmtMoney(balance)}{' '}{t('đ')}</b>.
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextInput
-          label="Số tiền (đ)"
+          label={t('Số tiền (đ)')}
           required
           type="number"
           min={0}
           value={form.amount}
           onChange={(e) => setForm({ ...form, amount: e.target.value })}
           error={errors.amount}
-          hint={form.amount ? `${fmtMoney(form.amount)} đ` : undefined}
+          hint={form.amount ? `${fmtMoney(form.amount)} ${t('đ')}` : undefined}
         />
         <TextInput
-          label="Ngày"
+          label={t('Ngày')}
           type="date"
           value={form.paymentDate}
           onChange={(e) => setForm({ ...form, paymentDate: e.target.value })}
           error={errors.paymentDate}
         />
-        <SelectInput label="Hình thức" value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
-          <option value="BANK_TRANSFER">Chuyển khoản</option>
-          <option value="CASH">Tiền mặt</option>
+        <SelectInput label={t('Hình thức')} value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
+          <option value="BANK_TRANSFER">{t('Chuyển khoản')}</option>
+          <option value="CASH">{t('Tiền mặt')}</option>
         </SelectInput>
-        <TextInput label="Ghi chú" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="VD: UNC số 125 – Vietcombank" />
+        <TextInput label={t('Ghi chú')} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder={t('VD: UNC số 125 – Vietcombank')} />
       </div>
     </Modal>
   );

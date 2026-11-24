@@ -1,10 +1,21 @@
-# VatTu Hub – Mini ERP quản lý vật tư & kho
+# Justin Stock – Mini ERP quản lý vật tư & kho
 
 Hệ thống quản lý nội bộ cho công ty thương mại vật tư cơ điện / xây dựng: danh mục vật tư, mua hàng, bán hàng,
 nhập – xuất – tồn nhiều kho, chuyển kho, kiểm kê, công nợ và báo cáo.
 
 > Trạng thái: **Ngày 6/7** – xong toàn bộ nghiệp vụ: danh mục, mua hàng → nhập kho, báo giá → bán hàng → xuất kho,
 > chuyển kho, kiểm kê, tồn kho, thẻ kho, công nợ, thanh toán, dashboard và báo cáo Excel.
+> Giao diện song ngữ **Tiếng Việt / English** (nút VI · EN ở góc trên).
+
+## Giao diện
+
+- **Song ngữ Việt – Anh** theo kiểu gettext: chuỗi tiếng Việt trong code là khoá, bản tiếng Anh nằm ở
+  `apps/web/src/i18n/en.ts`. Đổi ngôn ngữ không cần tải lại trang; ngày tháng và số tiền định dạng theo ngôn ngữ
+  (`24/11/2026`, `1.250.000 đ` ↔ `11/24/2026`, `1,250,000 ₫`). Thông báo lỗi phổ biến từ máy chủ cũng được dịch.
+- **Hệ thiết kế** tham khảo [taste-skill](https://github.com/Leonxlnx/taste-skill): giao diện 90–95% trung tính, một
+  màu nhấn duy nhất (teal `#0d7480`) cho nút chính, liên kết và focus; font IBM Plex Sans (đủ dấu tiếng Việt) và IBM
+  Plex Mono cho mã chứng từ; chữ nhỏ nhất 13px; số căn cột bằng `tabular-nums`; nhãn trạng thái có chấm màu + chữ
+  (không dùng màu làm tín hiệu duy nhất); chuyển động 150–180ms, tôn trọng `prefers-reduced-motion`.
 
 ## Công nghệ
 
@@ -77,11 +88,11 @@ Mật khẩu chung: `Demo@123`. Trang đăng nhập có nút đăng nhập nhanh
 
 | Vai trò | Email |
 |---|---|
-| Quản trị | admin@vattuhub.test |
-| Mua hàng | muahang@vattuhub.test |
-| Kinh doanh | kinhdoanh@vattuhub.test |
-| Thủ kho | thukho@vattuhub.test |
-| Kế toán | ketoan@vattuhub.test |
+| Quản trị | admin@justinstock.test |
+| Mua hàng | muahang@justinstock.test |
+| Kinh doanh | kinhdoanh@justinstock.test |
+| Thủ kho | thukho@justinstock.test |
+| Kế toán | ketoan@justinstock.test |
 
 ## Lộ trình
 

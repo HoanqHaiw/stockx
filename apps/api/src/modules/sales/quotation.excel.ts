@@ -19,7 +19,7 @@ export async function quotationWorkbook(id: number): Promise<{ name: string; buf
   const unitName = new Map(units.map((u) => [u.id, u.name]));
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'VatTu Hub';
+  wb.creator = 'Justin Stock';
   const ws = wb.addWorksheet('BaoGia', { pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1 } });
   ws.columns = [
     { key: 'stt', width: 6 },
