@@ -3,7 +3,7 @@
 Hệ thống quản lý nội bộ cho công ty thương mại vật tư cơ điện / xây dựng: danh mục vật tư, mua hàng, bán hàng,
 nhập – xuất – tồn nhiều kho, chuyển kho, kiểm kê, công nợ và báo cáo.
 
-> Trạng thái: **Ngày 2/7** – xong nền tảng và danh mục (vật tư, nhà cung cấp, khách hàng, kho, nhập/xuất Excel).
+> Trạng thái: **Ngày 3/7** – xong nền tảng, danh mục, nhập/xuất Excel và quy trình mua hàng → nhập kho.
 
 ## Công nghệ
 
@@ -29,6 +29,12 @@ nhập – xuất – tồn nhiều kho, chuyển kho, kiểm kê, công nợ v�
 - **Nhập vật tư từ Excel hai bước:** kiểm tra trước rồi mới ghi. Báo lỗi theo từng dòng, từng cột (mã nhóm/ĐVT không
   tồn tại, mã trùng trong file, số sai định dạng, quy đổi sai…), trả về file Excel tô đỏ dòng lỗi. Có lỗi thì không ghi
   dòng nào. Hiểu cả số kiểu Việt Nam như `15.800`.
+- **Quy trình mua hàng có kiểm soát:** Mua hàng lập đơn → Quản trị duyệt (người lập không tự duyệt) → Thủ kho nhập
+  kho theo số thực nhận, nhận nhiều lần. Mỗi lần nhập là một transaction: tạo phiếu nhập, ghi sổ kho, cộng số đã nhận
+  trên từng dòng, chuyển trạng thái đơn, ghi công nợ phải trả. Đơn bị khoá dòng trong lúc nhập nên nhiều thủ kho
+  nhập cùng lúc cũng không nhận vượt số đặt.
+- **Đơn vị trên chứng từ được "đóng băng":** mỗi dòng lưu hệ số quy đổi tại thời điểm lập, nên sửa quy đổi trong danh
+  mục không làm sai đơn cũ.
 - **Không xoá cứng danh mục đã phát sinh chứng từ:** dùng trạng thái ngừng sử dụng; không cho ngừng kho còn hàng,
   không cho đổi ĐVT cơ sở của vật tư đã có phát sinh kho.
 
@@ -63,7 +69,7 @@ Mật khẩu chung: `Demo@123`. Trang đăng nhập có nút đăng nhập nhanh
 
 - [x] Ngày 1 – CSDL, ghi sổ kho có khoá dòng, đăng nhập & vai trò, khung giao diện responsive, test
 - [x] Ngày 2 – CRUD danh mục, import/export Excel vật tư
-- [ ] Ngày 3 – Đơn mua hàng, phiếu nhập nhận từng phần
+- [x] Ngày 3 – Đơn mua hàng, phiếu nhập nhận từng phần
 - [ ] Ngày 4 – Báo giá → đơn bán → phiếu xuất, giao từng phần
 - [ ] Ngày 5 – Chuyển kho, kiểm kê, thẻ kho, màn hình tồn kho cho điện thoại
 - [ ] Ngày 6 – Công nợ, thanh toán, dashboard, báo cáo Excel
