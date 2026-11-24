@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: vattu-hub-db
+    environment:
+      POSTGRES_USER: vattu
+      POSTGRES_PASSWORD: vattu
+      POSTGRES_DB: vattu_hub
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vattu -d vattu_hub"]
+      interval: 5s
+      retries: 10
+volumes:
+  pgdata:

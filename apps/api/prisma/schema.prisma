@@ -1,0 +1,488 @@
+// VatTu Hub – Mini ERP quản lý vật tư & kho
+// Quy ước:
+// - Số lượng lưu Decimal(18,3), tiền lưu Decimal(18,2).
+// - Mọi biến động tồn kho đi qua StockLedger (chỉ thêm, không sửa/xoá).
+// - StockBalance là số tồn hiện tại, cập nhật trong cùng transaction với StockLedger.
+// - Mọi biến động công nợ đi qua DebtEntry theo cùng nguyên tắc.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Người dùng ─────────────────────────
+
+enum Role {
+  ADMIN
+  PURCHASING // mua hàng
+  SALES // kinh doanh
+  WAREHOUSE // thủ kho
+  ACCOUNTANT // kế toán
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         Role
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  createdPurchaseOrders  PurchaseOrder[] @relation("PoCreatedBy")
+  approvedPurchaseOrders PurchaseOrder[] @relation("PoApprovedBy")
+  createdQuotations      Quotation[]
+  createdSalesOrders     SalesOrder[]    @relation("SoCreatedBy")
+  approvedSalesOrders    SalesOrder[]    @relation("SoApprovedBy")
+  createdStockDocuments  StockDocument[] @relation("StockDocCreatedBy")
+  postedStockDocuments   StockDocument[] @relation("StockDocPostedBy")
+  payments               Payment[]
+}
+
+// ───────────────────────── Danh mục ─────────────────────────
+
+model MaterialGroup {
+  id        Int        @id @default(autoincrement())
+  code      String     @unique
+  name      String
+  materials Material[]
+}
+
+model Unit {
+  id          Int              @id @default(autoincrement())
+  code        String           @unique
+  name        String
+  baseOf      Material[]
+  conversions UnitConversion[]
+}
+
+model Material {
+  id            Int      @id @default(autoincrement())
+  code          String   @unique
+  name          String
+  specification String? // quy cách
+  groupId       Int
+  baseUnitId    Int // đơn vị tính cơ sở, mọi số tồn quy về đơn vị này
+  purchasePrice Decimal  @default(0) @db.Decimal(18, 2)
+  salePrice     Decimal  @default(0) @db.Decimal(18, 2)
+  minStock      Decimal  @default(0) @db.Decimal(18, 3) // ngưỡng cảnh báo tồn thấp
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  group       MaterialGroup    @relation(fields: [groupId], references: [id])
+  baseUnit    Unit             @relation(fields: [baseUnitId], references: [id])
+  conversions UnitConversion[]
+  balances    StockBalance[]
+  ledger      StockLedger[]
+
+  purchaseOrderLines PurchaseOrderLine[]
+  quotationLines     QuotationLine[]
+  salesOrderLines    SalesOrderLine[]
+  stockDocumentLines StockDocumentLine[]
+
+  @@index([groupId])
+  @@index([name])
+}
+
+/// 1 [unit] = factor × [đơn vị cơ sở]. Ví dụ: 1 cuộn = 100 mét.
+model UnitConversion {
+  id         Int     @id @default(autoincrement())
+  materialId Int
+  unitId     Int
+  factor     Decimal @db.Decimal(18, 6)
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  unit     Unit     @relation(fields: [unitId], references: [id])
+
+  @@unique([materialId, unitId])
+}
+
+enum WarehouseType {
+  MAIN // kho tổng
+  SITE // kho công trình
+}
+
+model Warehouse {
+  id       Int           @id @default(autoincrement())
+  code     String        @unique
+  name     String
+  address  String?
+  type     WarehouseType @default(MAIN)
+  isActive Boolean       @default(true)
+
+  balances          StockBalance[]
+  ledger            StockLedger[]
+  stockDocuments    StockDocument[] @relation("StockDocWarehouse")
+  incomingTransfers StockDocument[] @relation("StockDocToWarehouse")
+  purchaseOrders    PurchaseOrder[]
+  salesOrders       SalesOrder[]
+}
+
+model Supplier {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  taxCode   String?
+  phone     String?
+  email     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  purchaseOrders PurchaseOrder[]
+  stockDocuments StockDocument[]
+  payments       Payment[]
+  debtEntries    DebtEntry[]
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  taxCode   String?
+  phone     String?
+  email     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  quotations     Quotation[]
+  salesOrders    SalesOrder[]
+  stockDocuments StockDocument[]
+  payments       Payment[]
+  debtEntries    DebtEntry[]
+}
+
+// ───────────────────────── Mua hàng ─────────────────────────
+
+enum PurchaseOrderStatus {
+  DRAFT
+  APPROVED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id           Int                 @id @default(autoincrement())
+  code         String              @unique // PO-2026-0001
+  supplierId   Int
+  warehouseId  Int // kho dự kiến nhận
+  status       PurchaseOrderStatus @default(DRAFT)
+  orderDate    DateTime            @default(now())
+  expectedDate DateTime?
+  note         String?
+  totalAmount  Decimal             @default(0) @db.Decimal(18, 2)
+  createdById  Int
+  approvedById Int?
+  approvedAt   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  supplier       Supplier            @relation(fields: [supplierId], references: [id])
+  warehouse      Warehouse           @relation(fields: [warehouseId], references: [id])
+  createdBy      User                @relation("PoCreatedBy", fields: [createdById], references: [id])
+  approvedBy     User?               @relation("PoApprovedBy", fields: [approvedById], references: [id])
+  lines          PurchaseOrderLine[]
+  stockDocuments StockDocument[]
+
+  @@index([supplierId, orderDate])
+  @@index([status])
+}
+
+model PurchaseOrderLine {
+  id              Int     @id @default(autoincrement())
+  purchaseOrderId Int
+  materialId      Int
+  unitId          Int // đơn vị người dùng chọn khi đặt
+  factor          Decimal @db.Decimal(18, 6) // hệ số quy đổi tại thời điểm đặt
+  quantity        Decimal @db.Decimal(18, 3) // theo unitId
+  baseQuantity    Decimal @db.Decimal(18, 3) // = quantity × factor
+  receivedBaseQty Decimal @default(0) @db.Decimal(18, 3)
+  unitPrice       Decimal @db.Decimal(18, 2) // giá theo unitId
+  amount          Decimal @db.Decimal(18, 2)
+
+  purchaseOrder PurchaseOrder       @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  material      Material            @relation(fields: [materialId], references: [id])
+  receiptLines  StockDocumentLine[]
+
+  @@index([purchaseOrderId])
+}
+
+// ───────────────────────── Bán hàng ─────────────────────────
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model Quotation {
+  id          Int             @id @default(autoincrement())
+  code        String          @unique // BG-2026-0001
+  customerId  Int
+  status      QuotationStatus @default(DRAFT)
+  quoteDate   DateTime        @default(now())
+  validUntil  DateTime?
+  note        String?
+  totalAmount Decimal         @default(0) @db.Decimal(18, 2)
+  createdById Int
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  customer    Customer        @relation(fields: [customerId], references: [id])
+  createdBy   User            @relation(fields: [createdById], references: [id])
+  lines       QuotationLine[]
+  salesOrders SalesOrder[]
+
+  @@index([customerId, quoteDate])
+}
+
+model QuotationLine {
+  id           Int     @id @default(autoincrement())
+  quotationId  Int
+  materialId   Int
+  unitId       Int
+  factor       Decimal @db.Decimal(18, 6)
+  quantity     Decimal @db.Decimal(18, 3)
+  baseQuantity Decimal @db.Decimal(18, 3)
+  unitPrice    Decimal @db.Decimal(18, 2)
+  amount       Decimal @db.Decimal(18, 2)
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  material  Material  @relation(fields: [materialId], references: [id])
+
+  @@index([quotationId])
+}
+
+enum SalesOrderStatus {
+  DRAFT
+  APPROVED
+  PARTIALLY_DELIVERED
+  DELIVERED
+  CANCELLED
+}
+
+model SalesOrder {
+  id           Int              @id @default(autoincrement())
+  code         String           @unique // DB-2026-0001
+  customerId   Int
+  warehouseId  Int // kho xuất dự kiến
+  quotationId  Int?
+  status       SalesOrderStatus @default(DRAFT)
+  orderDate    DateTime         @default(now())
+  deliveryDate DateTime?
+  note         String?
+  totalAmount  Decimal          @default(0) @db.Decimal(18, 2)
+  createdById  Int
+  approvedById Int?
+  approvedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  customer       Customer         @relation(fields: [customerId], references: [id])
+  warehouse      Warehouse        @relation(fields: [warehouseId], references: [id])
+  quotation      Quotation?       @relation(fields: [quotationId], references: [id])
+  createdBy      User             @relation("SoCreatedBy", fields: [createdById], references: [id])
+  approvedBy     User?            @relation("SoApprovedBy", fields: [approvedById], references: [id])
+  lines          SalesOrderLine[]
+  stockDocuments StockDocument[]
+
+  @@index([customerId, orderDate])
+  @@index([status])
+}
+
+model SalesOrderLine {
+  id               Int     @id @default(autoincrement())
+  salesOrderId     Int
+  materialId       Int
+  unitId           Int
+  factor           Decimal @db.Decimal(18, 6)
+  quantity         Decimal @db.Decimal(18, 3)
+  baseQuantity     Decimal @db.Decimal(18, 3)
+  deliveredBaseQty Decimal @default(0) @db.Decimal(18, 3)
+  unitPrice        Decimal @db.Decimal(18, 2)
+  amount           Decimal @db.Decimal(18, 2)
+
+  salesOrder SalesOrder          @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  material   Material            @relation(fields: [materialId], references: [id])
+  issueLines StockDocumentLine[]
+
+  @@index([salesOrderId])
+}
+
+// ───────────────────────── Kho ─────────────────────────
+
+enum StockDocumentType {
+  RECEIPT // phiếu nhập
+  ISSUE // phiếu xuất
+  TRANSFER // phiếu chuyển kho
+  ADJUSTMENT // phiếu điều chỉnh / kiểm kê
+}
+
+enum StockDocumentStatus {
+  DRAFT
+  POSTED // đã ghi sổ – không được sửa
+  CANCELLED // đã huỷ bằng bút toán đảo
+}
+
+model StockDocument {
+  id              Int                 @id @default(autoincrement())
+  code            String              @unique // PN-/PX-/PC-/DC-2026-0001
+  type            StockDocumentType
+  status          StockDocumentStatus @default(DRAFT)
+  warehouseId     Int // kho nhập (RECEIPT), kho xuất (ISSUE/TRANSFER), kho kiểm kê (ADJUSTMENT)
+  toWarehouseId   Int? // kho nhận khi TRANSFER
+  purchaseOrderId Int?
+  salesOrderId    Int?
+  supplierId      Int?
+  customerId      Int?
+  docDate         DateTime            @default(now())
+  note            String?
+  totalAmount     Decimal             @default(0) @db.Decimal(18, 2)
+  createdById     Int
+  postedById      Int?
+  postedAt        DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  warehouse     Warehouse           @relation("StockDocWarehouse", fields: [warehouseId], references: [id])
+  toWarehouse   Warehouse?          @relation("StockDocToWarehouse", fields: [toWarehouseId], references: [id])
+  purchaseOrder PurchaseOrder?      @relation(fields: [purchaseOrderId], references: [id])
+  salesOrder    SalesOrder?         @relation(fields: [salesOrderId], references: [id])
+  supplier      Supplier?           @relation(fields: [supplierId], references: [id])
+  customer      Customer?           @relation(fields: [customerId], references: [id])
+  createdBy     User                @relation("StockDocCreatedBy", fields: [createdById], references: [id])
+  postedBy      User?               @relation("StockDocPostedBy", fields: [postedById], references: [id])
+  lines         StockDocumentLine[]
+  ledger        StockLedger[]
+  debtEntries   DebtEntry[]
+
+  @@index([type, docDate])
+  @@index([warehouseId, docDate])
+  @@index([status])
+}
+
+model StockDocumentLine {
+  id                  Int     @id @default(autoincrement())
+  documentId          Int
+  materialId          Int
+  unitId              Int
+  factor              Decimal @db.Decimal(18, 6)
+  quantity            Decimal @db.Decimal(18, 3) // theo unitId; ADJUSTMENT có thể âm
+  baseQuantity        Decimal @db.Decimal(18, 3)
+  unitPrice           Decimal @default(0) @db.Decimal(18, 2)
+  amount              Decimal @default(0) @db.Decimal(18, 2)
+  purchaseOrderLineId Int?
+  salesOrderLineId    Int?
+
+  document          StockDocument      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  material          Material           @relation(fields: [materialId], references: [id])
+  purchaseOrderLine PurchaseOrderLine? @relation(fields: [purchaseOrderLineId], references: [id])
+  salesOrderLine    SalesOrderLine?    @relation(fields: [salesOrderLineId], references: [id])
+
+  @@index([documentId])
+}
+
+/// Sổ kho: mỗi dòng là một biến động, chỉ thêm, không sửa/xoá.
+model StockLedger {
+  id           BigInt   @id @default(autoincrement())
+  materialId   Int
+  warehouseId  Int
+  documentId   Int
+  quantity     Decimal  @db.Decimal(18, 3) // theo đơn vị cơ sở, + nhập / − xuất
+  balanceAfter Decimal  @db.Decimal(18, 3)
+  createdAt    DateTime @default(now())
+
+  material  Material      @relation(fields: [materialId], references: [id])
+  warehouse Warehouse     @relation(fields: [warehouseId], references: [id])
+  document  StockDocument @relation(fields: [documentId], references: [id])
+
+  @@index([materialId, warehouseId, createdAt]) // thẻ kho
+  @@index([warehouseId, createdAt]) // báo cáo nhập-xuất-tồn theo kho
+  @@index([documentId])
+}
+
+/// Tồn hiện tại theo vật tư × kho. CHECK (quantity >= 0) được thêm trong migration.
+model StockBalance {
+  materialId  Int
+  warehouseId Int
+  quantity    Decimal  @default(0) @db.Decimal(18, 3)
+  updatedAt   DateTime @updatedAt
+
+  material  Material  @relation(fields: [materialId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@id([materialId, warehouseId])
+  @@index([warehouseId])
+}
+
+// ───────────────────────── Công nợ ─────────────────────────
+
+enum PartnerType {
+  SUPPLIER // phải trả
+  CUSTOMER // phải thu
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+}
+
+model Payment {
+  id          Int           @id @default(autoincrement())
+  code        String        @unique // PT-/PC-2026-0001
+  partnerType PartnerType
+  supplierId  Int?
+  customerId  Int?
+  amount      Decimal       @db.Decimal(18, 2)
+  method      PaymentMethod @default(BANK_TRANSFER)
+  paymentDate DateTime      @default(now())
+  note        String?
+  createdById Int
+  createdAt   DateTime      @default(now())
+
+  supplier    Supplier?   @relation(fields: [supplierId], references: [id])
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+  createdBy   User        @relation(fields: [createdById], references: [id])
+  debtEntries DebtEntry[]
+
+  @@index([partnerType, paymentDate])
+}
+
+/// Sổ công nợ: + làm tăng nợ (nhập hàng chưa trả / xuất hàng chưa thu), − khi thanh toán.
+model DebtEntry {
+  id          BigInt      @id @default(autoincrement())
+  partnerType PartnerType
+  supplierId  Int?
+  customerId  Int?
+  documentId  Int?
+  paymentId   Int?
+  amount      Decimal     @db.Decimal(18, 2)
+  createdAt   DateTime    @default(now())
+
+  supplier Supplier?      @relation(fields: [supplierId], references: [id])
+  customer Customer?      @relation(fields: [customerId], references: [id])
+  document StockDocument? @relation(fields: [documentId], references: [id])
+  payment  Payment?       @relation(fields: [paymentId], references: [id])
+
+  @@index([supplierId, createdAt])
+  @@index([customerId, createdAt])
+}
+
+// ───────────────────────── Hệ thống ─────────────────────────
+
+/// Bộ đếm số chứng từ, tăng nguyên tử bằng UPSERT ... RETURNING.
+model DocumentSequence {
+  key       String @id // ví dụ "PN-2026"
+  lastValue Int    @default(0)
+}
