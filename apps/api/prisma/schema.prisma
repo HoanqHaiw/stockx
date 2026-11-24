@@ -373,17 +373,20 @@ model StockDocument {
 }
 
 model StockDocumentLine {
-  id                  Int     @id @default(autoincrement())
+  id                  Int      @id @default(autoincrement())
   documentId          Int
   materialId          Int
   unitId              Int
-  factor              Decimal @db.Decimal(18, 6)
-  quantity            Decimal @db.Decimal(18, 3) // theo unitId; ADJUSTMENT có thể âm
-  baseQuantity        Decimal @db.Decimal(18, 3)
-  unitPrice           Decimal @default(0) @db.Decimal(18, 2)
-  amount              Decimal @default(0) @db.Decimal(18, 2)
+  factor              Decimal  @db.Decimal(18, 6)
+  quantity            Decimal  @db.Decimal(18, 3) // theo unitId; ADJUSTMENT có thể âm
+  baseQuantity        Decimal  @db.Decimal(18, 3)
+  unitPrice           Decimal  @default(0) @db.Decimal(18, 2)
+  amount              Decimal  @default(0) @db.Decimal(18, 2)
   purchaseOrderLineId Int?
   salesOrderLineId    Int?
+  /// Chỉ dùng cho phiếu kiểm kê: tồn sổ sách và số đếm thực tế (đơn vị cơ sở) tại thời điểm ghi sổ.
+  bookQty             Decimal? @db.Decimal(18, 3)
+  countedQty          Decimal? @db.Decimal(18, 3)
 
   document          StockDocument      @relation(fields: [documentId], references: [id], onDelete: Cascade)
   material          Material           @relation(fields: [materialId], references: [id])

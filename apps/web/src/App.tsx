@@ -12,7 +12,16 @@ import { customerConfig, PartnersPage, supplierConfig } from './pages/partners/P
 import { PurchaseOrderDetailPage } from './pages/purchasing/PurchaseOrderDetailPage';
 import { PurchaseOrderFormPage } from './pages/purchasing/PurchaseOrderFormPage';
 import { PurchaseOrdersPage } from './pages/purchasing/PurchaseOrdersPage';
+import { QuotationDetailPage } from './pages/sales/QuotationDetailPage';
+import { SalesDocFormPage } from './pages/sales/SalesDocFormPage';
+import { SalesListPage } from './pages/sales/SalesListPage';
+import { SalesOrderDetailPage } from './pages/sales/SalesOrderDetailPage';
+import { IssuesPage } from './pages/stock/IssuesPage';
 import { ReceiptsPage } from './pages/stock/ReceiptsPage';
+import { StockBalancesPage } from './pages/stock/StockBalancesPage';
+import { StockCountPage } from './pages/stock/StockCountPage';
+import { StockDocListPage } from './pages/stock/StockDocListPage';
+import { TransferFormPage } from './pages/stock/TransferFormPage';
 import { WarehousesPage } from './pages/WarehousesPage';
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -39,7 +48,46 @@ const pages: Record<string, ReactNode> = {
   '/warehouses': <WarehousesPage />,
   '/purchase-orders': <PurchaseOrdersPage />,
   '/stock/receipts': <ReceiptsPage />,
+  '/quotations': <SalesListPage key="quotations" kind="quotation" />,
+  '/sales-orders': <SalesListPage key="sales-orders" kind="salesOrder" />,
+  '/stock/issues': <IssuesPage />,
+  '/stock/balances': <StockBalancesPage />,
+  '/stock/transfers': (
+    <StockDocListPage
+      key="transfers"
+      type="TRANSFER"
+      title="Chuyển kho"
+      subtitle="Chuyển hàng giữa kho tổng và kho công trình"
+      createTo="/stock/transfers/new"
+      createLabel="Chuyển kho"
+    />
+  ),
+  '/stock/counts': (
+    <StockDocListPage
+      key="counts"
+      type="ADJUSTMENT"
+      title="Kiểm kê"
+      subtitle="Đếm thực tế, hệ thống tự điều chỉnh phần chênh lệch so với sổ sách"
+      createTo="/stock/counts/new"
+      createLabel="Kiểm kê mới"
+    />
+  ),
 };
+
+/** Trang con không nằm trên menu: [đường dẫn, vai trò, trang]. */
+const subPages: [string, Role[], ReactNode][] = [
+  ['/purchase-orders/new', ['PURCHASING'], <PurchaseOrderFormPage key="po-new" />],
+  ['/purchase-orders/:id/edit', ['PURCHASING'], <PurchaseOrderFormPage key="po-edit" />],
+  ['/purchase-orders/:id', ['PURCHASING', 'WAREHOUSE', 'ACCOUNTANT'], <PurchaseOrderDetailPage />],
+  ['/quotations/new', ['SALES'], <SalesDocFormPage key="q-new" kind="quotation" />],
+  ['/quotations/:id/edit', ['SALES'], <SalesDocFormPage key="q-edit" kind="quotation" />],
+  ['/quotations/:id', ['SALES', 'ACCOUNTANT'], <QuotationDetailPage />],
+  ['/sales-orders/new', ['SALES'], <SalesDocFormPage key="so-new" kind="salesOrder" />],
+  ['/sales-orders/:id/edit', ['SALES'], <SalesDocFormPage key="so-edit" kind="salesOrder" />],
+  ['/sales-orders/:id', ['SALES', 'WAREHOUSE', 'ACCOUNTANT'], <SalesOrderDetailPage />],
+  ['/stock/transfers/new', ['WAREHOUSE'], <TransferFormPage />],
+  ['/stock/counts/new', ['WAREHOUSE'], <StockCountPage />],
+];
 
 const featurePages = navSections.flatMap((s) => s.items).filter((i) => i.to !== '/');
 
@@ -64,31 +112,9 @@ export function App() {
             />
           ))}
 
-          {/* Trang con không nằm trên menu */}
-          <Route
-            path="/purchase-orders/new"
-            element={
-              <Guard roles={['PURCHASING']}>
-                <PurchaseOrderFormPage />
-              </Guard>
-            }
-          />
-          <Route
-            path="/purchase-orders/:id/edit"
-            element={
-              <Guard roles={['PURCHASING']}>
-                <PurchaseOrderFormPage />
-              </Guard>
-            }
-          />
-          <Route
-            path="/purchase-orders/:id"
-            element={
-              <Guard roles={['PURCHASING', 'WAREHOUSE', 'ACCOUNTANT']}>
-                <PurchaseOrderDetailPage />
-              </Guard>
-            }
-          />
+          {subPages.map(([path, roles, page]) => (
+            <Route key={path} path={path} element={<Guard roles={roles}>{page}</Guard>} />
+          ))}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

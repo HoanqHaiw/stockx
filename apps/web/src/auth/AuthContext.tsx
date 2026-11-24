@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { api, tokenStore } from '../lib/api';
+import { api, ApiError, tokenStore } from '../lib/api';
 import type { User } from '../lib/roles';
 
 interface AuthState {
@@ -20,7 +20,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!tokenStore.get()) return;
     api<{ user: User }>('/auth/me')
       .then((r) => setUser(r.user))
-      .catch(() => tokenStore.clear())
+      // Chỉ xoá phiên khi token thật sự hết hạn; mất kết nối tạm thời thì giữ token để tải lại là vào được.
+      .catch((err) => err instanceof ApiError && err.status === 401 && tokenStore.clear())
       .finally(() => setLoading(false));
   }, []);
 

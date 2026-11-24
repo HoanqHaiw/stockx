@@ -3,10 +3,11 @@ import { Link, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Ban, CheckCircle2, PackagePlus, Pencil } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
-import { fmtDate, fmtMoney, fmtQty, unitOf } from '../../lib/format';
+import { fmtDate, fmtMoney } from '../../lib/format';
 import { canAccess } from '../../lib/roles';
 import { poStatusLabel, poStatusTone, type PurchaseOrder, type StockDocument } from '../../lib/types';
 import { useAuth } from '../../auth/AuthContext';
+import { DocHistory, Info, LinesTable } from '../../components/DocParts';
 import { Badge, Button, ErrorBanner } from '../../components/ui';
 import { ReceiveModal } from './ReceiveModal';
 import { StockDocumentModal } from '../stock/StockDocumentModal';
@@ -110,82 +111,11 @@ export function PurchaseOrderDetailPage() {
         {po.note && <Info label="Ghi chú" value={po.note} wide />}
       </div>
 
-      <div className="mb-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
-            <tr>
-              <th className="px-4 py-2.5">Vật tư</th>
-              <th className="px-4 py-2.5 text-right">Số lượng</th>
-              <th className="px-4 py-2.5 text-right">Đơn giá</th>
-              <th className="px-4 py-2.5 text-right">Thành tiền</th>
-              <th className="px-4 py-2.5">Đã nhận</th>
-            </tr>
-          </thead>
-          <tbody>
-            {po.lines.map((l) => {
-              const unit = unitOf(l.material, l.unitId);
-              const pct = Math.min(100, (Number(l.receivedBaseQty) / Number(l.baseQuantity)) * 100);
-              return (
-                <tr key={l.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-2.5">
-                    <div className="font-mono text-xs text-slate-500">{l.material.code}</div>
-                    <div>{l.material.name}</div>
-                  </td>
-                  <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">
-                    {fmtQty(l.quantity)} {unit.name.toLowerCase()}
-                  </td>
-                  <td className="px-4 py-2.5 text-right tabular-nums">{fmtMoney(l.unitPrice)}</td>
-                  <td className="px-4 py-2.5 text-right tabular-nums">{fmtMoney(l.amount)}</td>
-                  <td className="w-44 px-4 py-2.5">
-                    <div className="mb-1 text-xs text-slate-600 tabular-nums">
-                      {fmtQty(Number(l.receivedBaseQty) / Number(l.factor))}/{fmtQty(l.quantity)}
-                    </div>
-                    <div className="h-1.5 rounded-full bg-slate-100">
-                      <div className={`h-1.5 rounded-full ${pct >= 100 ? 'bg-emerald-500' : 'bg-teal-500'}`} style={{ width: `${pct}%` }} />
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-3 font-medium">Phiếu nhập kho</div>
-        {po.stockDocuments.length === 0 ? (
-          <p className="px-4 py-6 text-center text-sm text-slate-500">Chưa nhập kho lần nào.</p>
-        ) : (
-          <ul className="divide-y divide-slate-100">
-            {po.stockDocuments.map((d) => (
-              <li key={d.id}>
-                <button onClick={() => setViewDocId(d.id)} className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50">
-                  <div>
-                    <div className="font-medium text-teal-700">{d.code}</div>
-                    <div className="text-xs text-slate-500">
-                      {fmtDate(d.docDate)} · {d.createdBy.fullName}
-                    </div>
-                  </div>
-                  <span className="tabular-nums">{fmtMoney(d.totalAmount)} đ</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <LinesTable lines={po.lines} progressLabel="Đã nhận" progressOf={(l) => Number((l as PurchaseOrder['lines'][number]).receivedBaseQty)} />
+      <DocHistory title="Phiếu nhập kho" empty="Chưa nhập kho lần nào." docs={po.stockDocuments} onOpen={setViewDocId} />
 
       <ReceiveModal po={po} open={receiveOpen} onClose={() => setReceiveOpen(false)} onDone={onReceived} />
       <StockDocumentModal id={viewDocId} onClose={() => setViewDocId(null)} />
-    </div>
-  );
-}
-
-function Info({ label, value, sub, wide }: { label: string; value: string; sub?: string; wide?: boolean }) {
-  return (
-    <div className={wide ? 'sm:col-span-2 lg:col-span-4' : ''}>
-      <div className="text-xs text-slate-500">{label}</div>
-      <div className="font-medium">{value}</div>
-      {sub && <div className="text-xs text-slate-500">{sub}</div>}
     </div>
   );
 }

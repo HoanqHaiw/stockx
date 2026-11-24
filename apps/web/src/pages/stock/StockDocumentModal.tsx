@@ -9,7 +9,7 @@ export const docTypeLabel: Record<StockDocType, string> = {
   RECEIPT: 'Phiếu nhập kho',
   ISSUE: 'Phiếu xuất kho',
   TRANSFER: 'Phiếu chuyển kho',
-  ADJUSTMENT: 'Phiếu điều chỉnh',
+  ADJUSTMENT: 'Phiếu kiểm kê / điều chỉnh',
 };
 
 export function StockDocumentModal({ id, onClose }: { id: number | null; onClose: () => void }) {
@@ -53,6 +53,20 @@ export function StockDocumentModal({ id, onClose }: { id: number | null; onClose
                 <div className="font-medium">{doc.supplier.name}</div>
               </div>
             )}
+            {doc.customer && (
+              <div>
+                <div className="text-xs text-slate-500">Khách hàng</div>
+                <div className="font-medium">{doc.customer.name}</div>
+              </div>
+            )}
+            {doc.salesOrder && (
+              <div>
+                <div className="text-xs text-slate-500">Theo đơn bán</div>
+                <Link to={`/sales-orders/${doc.salesOrder.id}`} onClick={onClose} className="font-medium text-teal-700 hover:underline">
+                  {doc.salesOrder.code}
+                </Link>
+              </div>
+            )}
             {doc.purchaseOrder && (
               <div>
                 <div className="text-xs text-slate-500">Theo đơn mua</div>
@@ -90,7 +104,16 @@ export function StockDocumentModal({ id, onClose }: { id: number | null; onClose
                       {fmtQty(l.quantity)} {l.unit.name.toLowerCase()}
                     </td>
                     <td className="py-2 pr-3 text-right whitespace-nowrap text-slate-500 tabular-nums">
-                      {fmtQty(l.baseQuantity)} {l.material.baseUnit.name.toLowerCase()}
+                      {l.countedQty !== null ? (
+                        // Phiếu kiểm kê: số lượng là chênh lệch, hiển thị kèm sổ sách → thực đếm.
+                        <>
+                          sổ {fmtQty(l.bookQty)} → đếm {fmtQty(l.countedQty)}
+                        </>
+                      ) : (
+                        <>
+                          {fmtQty(l.baseQuantity)} {l.material.baseUnit.name.toLowerCase()}
+                        </>
+                      )}
                     </td>
                     <td className="py-2 text-right tabular-nums">{fmtMoney(l.amount)}</td>
                   </tr>

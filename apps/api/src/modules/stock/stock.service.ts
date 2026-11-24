@@ -64,7 +64,10 @@ export async function postStockDocumentTx(tx: Tx, documentId: number, userId: nu
   });
   if (doc.lines.length === 0) throw badRequest('Phiếu chưa có dòng vật tư nào');
 
-  const movements = doc.lines.flatMap((l) => movementsOf(doc.type, doc.warehouseId, doc.toWarehouseId, l));
+  // Dòng có số lượng 0 (VD kiểm kê khớp sổ) vẫn nằm trên phiếu để lưu vết nhưng không sinh biến động.
+  const movements = doc.lines
+    .flatMap((l) => movementsOf(doc.type, doc.warehouseId, doc.toWarehouseId, l))
+    .filter((m) => !m.quantity.isZero());
 
   // Gộp theo (vật tư, kho) rồi sắp xếp để mọi transaction khoá theo cùng thứ tự.
   const keyOf = (m: Movement) => `${m.materialId}:${m.warehouseId}`;

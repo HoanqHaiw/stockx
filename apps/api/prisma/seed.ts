@@ -129,6 +129,21 @@ async function main() {
   const allWarehouses = await prisma.warehouse.findMany({ orderBy: { id: 'asc' } });
   for (const [wi, w] of allWarehouses.entries()) {
     const ratio = w.type === 'SITE' ? 0.3 : wi === 0 ? 3 : 1.5;
+    const lines = allMaterials
+      // Kho công trình chỉ giữ một phần vật tư; vài mã để dưới mức tối thiểu cho cảnh báo tồn thấp.
+      .filter((_, i) => w.type !== 'SITE' || i % 2 === 0)
+      .map((m, i) => {
+        const qty = m.minStock.mul(ratio).mul(i % 7 === 3 ? 0.2 : 1).toDecimalPlaces(0);
+        return {
+          materialId: m.id,
+          unitId: m.baseUnitId,
+          factor: D(1),
+          quantity: qty,
+          baseQuantity: qty,
+          unitPrice: m.purchasePrice,
+          amount: qty.mul(m.purchasePrice),
+        };
+      });
     await prisma.$transaction(async (tx) => {
       const doc = await tx.stockDocument.create({
         data: {
@@ -136,24 +151,9 @@ async function main() {
           type: 'ADJUSTMENT',
           warehouseId: w.id,
           note: 'Tồn đầu kỳ',
+          totalAmount: lines.reduce((s, l) => s.plus(l.amount), D(0)),
           createdById: admin.id,
-          lines: {
-            create: allMaterials
-              // Kho công trình chỉ giữ một phần vật tư; vài mã để dưới mức tối thiểu cho cảnh báo tồn thấp.
-              .filter((_, i) => w.type !== 'SITE' || i % 2 === 0)
-              .map((m, i) => {
-                const qty = m.minStock.mul(ratio).mul(i % 7 === 3 ? 0.2 : 1).toDecimalPlaces(0);
-                return {
-                  materialId: m.id,
-                  unitId: m.baseUnitId,
-                  factor: D(1),
-                  quantity: qty,
-                  baseQuantity: qty,
-                  unitPrice: m.purchasePrice,
-                  amount: qty.mul(m.purchasePrice),
-                };
-              }),
-          },
+          lines: { create: lines },
         },
       });
       await postStockDocumentTx(tx, doc.id, admin.id);

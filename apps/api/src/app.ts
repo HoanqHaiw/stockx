@@ -12,6 +12,7 @@ import { partnerRouter } from './modules/master/partner.routes.js';
 import { materialsRouter } from './modules/materials/materials.routes.js';
 import { purchasingRouter } from './modules/purchasing/purchasing.routes.js';
 import { stockRouter } from './modules/stock/stock.routes.js';
+import { quotationsRouter, salesOrdersRouter } from './modules/sales/sales.routes.js';
 
 export function createApp() {
   const app = express();
@@ -32,6 +33,8 @@ export function createApp() {
   app.use('/api/customers', partnerRouter('customer', ['SALES']));
   app.use('/api/purchase-orders', purchasingRouter);
   app.use('/api/stock', stockRouter);
+  app.use('/api/quotations', quotationsRouter);
+  app.use('/api/sales-orders', salesOrdersRouter);
 
   app.use((_req, _res, next) => next(notFound('API không tồn tại')));
   app.use(errorHandler);
