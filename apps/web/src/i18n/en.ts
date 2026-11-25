@@ -501,4 +501,7 @@ export const en: Record<string, string> = {
   'File quá lớn, tối đa 5MB': 'File too large, 5 MB maximum',
   'File không có dòng dữ liệu nào': 'The file has no data rows',
   'Tài khoản không tồn tại hoặc đã bị khoá': 'Account not found or locked',
+  'Đăng nhập sai quá nhiều lần, vui lòng thử lại sau ít phút': 'Too many sign-in attempts, please try again in a few minutes',
+  'Máy chủ demo đang khởi động sau thời gian nghỉ, có thể mất khoảng một phút. Bạn cứ chờ, trang sẽ dùng được ngay khi xong.':
+    'The demo server is waking up after being idle, which can take about a minute. Please wait; the page will work as soon as it is ready.',
 };

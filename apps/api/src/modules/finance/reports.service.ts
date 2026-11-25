@@ -116,39 +116,59 @@ function vnRange(from: Date, to: Date) {
 }
 
 /**
- * Báo cáo nhập – xuất – tồn theo kỳ, một truy vấn trên sổ kho.
- * Xem tất cả kho thì bỏ qua phiếu chuyển kho (nhập kho này = xuất kho kia, không làm đổi tổng).
+ * Báo cáo nhập – xuất – tồn theo kỳ.
+ *
+ * Cách tính để không phải cộng toàn bộ lịch sử sổ kho:
+ *   tồn cuối kỳ = tồn hiện tại (StockBalance) − phát sinh sau cuối kỳ
+ *   tồn đầu kỳ  = tồn cuối kỳ − phát sinh thuần trong kỳ
+ * nên chỉ đọc các dòng sổ kho từ đầu kỳ trở đi (dùng index theo thời gian). Đúng vì StockBalance luôn bằng
+ * tổng sổ kho (được cập nhật trong cùng transaction khi ghi sổ).
+ * Xem tất cả kho thì không tính phiếu chuyển kho vào nhập/xuất (nhập kho này = xuất kho kia).
  */
 export async function inventoryMovement(q: MovementQuery) {
   const { start, end } = vnRange(q.from, q.to);
-  const whCond = q.warehouseId ? Prisma.sql`AND l."warehouseId" = ${q.warehouseId}` : Prisma.empty;
-  const inPeriod = Prisma.sql`l."createdAt" >= ${start} AND l."createdAt" <= ${end}`;
+  const balWh = q.warehouseId ? Prisma.sql`WHERE b."warehouseId" = ${q.warehouseId}` : Prisma.empty;
+  const ledWh = q.warehouseId ? Prisma.sql`AND l."warehouseId" = ${q.warehouseId}` : Prisma.empty;
+  const inPeriod = Prisma.sql`l."createdAt" <= ${end}`; // các dòng đã lọc >= start
   const notTransfer = q.warehouseId ? Prisma.sql`TRUE` : Prisma.sql`d.type <> 'TRANSFER'`;
 
   const rows = await prisma.$queryRaw<
     { id: number; code: string; name: string; unit: string; price: Prisma.Decimal;
-      opening: Prisma.Decimal; qin: Prisma.Decimal; qout: Prisma.Decimal }[]
+      closing: Prisma.Decimal; net: Prisma.Decimal; qin: Prisma.Decimal; qout: Prisma.Decimal }[]
   >`
+    WITH bal AS (
+      SELECT b."materialId", SUM(b.quantity) AS qty FROM "StockBalance" b ${balWh} GROUP BY b."materialId"
+    ), mv AS (
+      SELECT l."materialId",
+        SUM(l.quantity) FILTER (WHERE l."createdAt" > ${end}) AS after_end,
+        SUM(l.quantity) FILTER (WHERE ${inPeriod}) AS net,
+        SUM(l.quantity) FILTER (WHERE ${inPeriod} AND l.quantity > 0 AND ${notTransfer}) AS qin,
+        -SUM(l.quantity) FILTER (WHERE ${inPeriod} AND l.quantity < 0 AND ${notTransfer}) AS qout
+      FROM "StockLedger" l
+      JOIN "StockDocument" d ON d.id = l."documentId"
+      WHERE l."createdAt" >= ${start} ${ledWh}
+      GROUP BY l."materialId"
+    )
     SELECT m.id, m.code, m.name, u.name AS unit, m."purchasePrice" AS price,
-      COALESCE(SUM(l.quantity) FILTER (WHERE l."createdAt" < ${start}), 0) AS opening,
-      COALESCE(SUM(l.quantity) FILTER (WHERE ${inPeriod} AND l.quantity > 0 AND ${notTransfer}), 0) AS qin,
-      COALESCE(-SUM(l.quantity) FILTER (WHERE ${inPeriod} AND l.quantity < 0 AND ${notTransfer}), 0) AS qout
+      COALESCE(bal.qty, 0) - COALESCE(mv.after_end, 0) AS closing,
+      COALESCE(mv.net, 0) AS net, COALESCE(mv.qin, 0) AS qin, COALESCE(mv.qout, 0) AS qout
     FROM "Material" m
     JOIN "Unit" u ON u.id = m."baseUnitId"
-    JOIN "StockLedger" l ON l."materialId" = m.id AND l."createdAt" <= ${end} ${whCond}
-    JOIN "StockDocument" d ON d.id = l."documentId"
-    GROUP BY m.id, u.name
+    LEFT JOIN bal ON bal."materialId" = m.id
+    LEFT JOIN mv ON mv."materialId" = m.id
+    WHERE bal."materialId" IS NOT NULL OR mv."materialId" IS NOT NULL
     ORDER BY m.code`;
 
   const items = rows
     .map((r) => {
-      const closing = new D(r.opening).plus(r.qin).minus(r.qout);
+      const closing = new D(r.closing);
+      const opening = closing.minus(r.net);
       return {
         id: r.id,
         code: r.code,
         name: r.name,
         unit: r.unit,
-        opening: r.opening.toString(),
+        opening: opening.toString(),
         in: r.qin.toString(),
         out: r.qout.toString(),
         closing: closing.toString(),

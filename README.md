@@ -6,6 +6,8 @@ nhập – xuất – tồn nhiều kho, chuyển kho, kiểm kê, công nợ v�
 > Trạng thái: **Ngày 6/7** – xong toàn bộ nghiệp vụ: danh mục, mua hàng → nhập kho, báo giá → bán hàng → xuất kho,
 > chuyển kho, kiểm kê, tồn kho, thẻ kho, công nợ, thanh toán, dashboard và báo cáo Excel.
 > Giao diện song ngữ **Tiếng Việt / English** (nút VI · EN ở góc trên).
+>
+> **Demo:** _(điền link Render sau khi deploy)_ · tài khoản demo ở mục bên dưới.
 
 ## Giao diện
 
@@ -25,7 +27,7 @@ nhập – xuất – tồn nhiều kho, chuyển kho, kiểm kê, công nợ v�
 | Backend | Node.js, TypeScript, Express 5, Zod, JWT |
 | CSDL | PostgreSQL 16, Prisma |
 | Kiểm thử | Vitest, Supertest – chạy trên CSDL PostgreSQL thật |
-| Hạ tầng | Docker Compose, GitHub Actions |
+| Hạ tầng | Docker (multi-stage), Docker Compose, GitHub Actions, Render + Neon |
 
 ## Điểm kỹ thuật chính
 
@@ -94,6 +96,44 @@ Mật khẩu chung: `Demo@123`. Trang đăng nhập có nút đăng nhập nhanh
 | Thủ kho | thukho@justinstock.test |
 | Kế toán | ketoan@justinstock.test |
 
+## Hiệu năng
+
+Đo bằng `npm run bench -w apps/api`: sinh **500.000 dòng sổ kho** (300 vật tư × 5 kho, 40.000 chứng từ, trải 1 năm) trong
+một CSDL riêng, chạy mỗi truy vấn 7 lần, lấy trung vị. PostgreSQL 16 trong Docker trên laptop.
+
+| Truy vấn | Có index | Không index |
+|---|---:|---:|
+| Thẻ kho 1 vật tư × 1 kho, 30 ngày | 16 ms | 54 ms |
+| Nhập – xuất – tồn 1 kho, 30 ngày | 46 ms | 57 ms |
+| Nhập – xuất – tồn tất cả kho, 30 ngày | 67 ms | 96 ms |
+| Bảng tồn tất cả kho, trang đầu | 7 ms | 6 ms |
+
+Lần đo đầu cho thấy báo cáo nhập – xuất – tồn **không nhanh hơn khi có index** (263 ms tất cả kho): để ra tồn đầu kỳ,
+truy vấn cộng toàn bộ lịch sử sổ kho. Đã đổi cách tính: *tồn cuối kỳ = tồn hiện tại − phát sinh sau cuối kỳ*,
+*tồn đầu kỳ = tồn cuối kỳ − phát sinh trong kỳ*, nên chỉ đọc các dòng từ đầu kỳ trở đi qua index thời gian
+→ **263 ms còn 67 ms** (1 kho: 118 ms còn 46 ms). Kết quả không đổi, toàn bộ test báo cáo vẫn đạt.
+
+## Deploy (Render + Neon, miễn phí)
+
+Một Docker image chạy cả API và giao diện (cùng domain, không cần CORS). Khi khởi động image tự
+`prisma migrate deploy`, nạp dữ liệu mẫu nếu CSDL còn trống, rồi chạy server.
+
+1. **CSDL – [Neon](https://neon.tech)**: tạo project (region Singapore), copy *connection string* dạng
+   `postgresql://...neon.tech/neondb?sslmode=require` (dùng chuỗi **không** qua pooler để migrate chạy được).
+2. **Server – [Render](https://render.com)**: *New → Blueprint* → chọn repo này (Render đọc `render.yaml`)
+   → dán `DATABASE_URL` → *Apply*. `JWT_SECRET` được Render tự sinh. Lần build đầu ~5 phút.
+3. **Giữ server thức**: gói miễn phí ngủ sau 15 phút không truy cập. Vào GitHub *Settings → Secrets and variables →
+   Actions → Variables*, thêm `DEMO_URL` = địa chỉ Render (VD `https://justin-stock.onrender.com`); workflow
+   `keep-alive.yml` sẽ gọi `/api/health` mỗi 10 phút trong giờ làm việc. Trang đăng nhập vẫn báo
+   "máy chủ đang khởi động" nếu người xem vào lúc server đang ngủ.
+
+Chạy thử image trên máy:
+
+```bash
+docker build -t justin-stock .
+docker run -p 4000:4000 -e DATABASE_URL="postgresql://..." -e JWT_SECRET="chuoi-bi-mat-dai-it-nhat-32-ky-tu" justin-stock
+```
+
 ## Lộ trình
 
 - [x] Ngày 1 – CSDL, ghi sổ kho có khoá dòng, đăng nhập & vai trò, khung giao diện responsive, test
@@ -102,4 +142,4 @@ Mật khẩu chung: `Demo@123`. Trang đăng nhập có nút đăng nhập nhanh
 - [x] Ngày 4 – Báo giá → đơn bán → phiếu xuất, giao từng phần
 - [x] Ngày 5 – Chuyển kho, kiểm kê, thẻ kho, màn hình tồn kho cho điện thoại
 - [x] Ngày 6 – Công nợ, thanh toán, dashboard, báo cáo Excel
-- [ ] Ngày 7 – Đo hiệu năng với dữ liệu lớn, deploy, hoàn thiện tài liệu
+- [x] Ngày 7 – Đo hiệu năng với dữ liệu lớn, tối ưu báo cáo, đóng gói Docker, cấu hình deploy

@@ -9,6 +9,8 @@ const env = z
     PORT: z.coerce.number().default(4000),
     CORS_ORIGIN: z.string().default('http://localhost:5173'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    /** Thư mục build của giao diện (apps/web/dist). Có giá trị thì API phục vụ luôn giao diện. */
+    WEB_DIST: z.string().optional(),
   })
   .parse(process.env);
 

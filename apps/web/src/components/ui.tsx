@@ -115,7 +115,7 @@ export function FilterSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
 
 export function SearchBox({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
   return (
-    <div className="relative w-full sm:w-auto sm:max-w-xs sm:min-w-0 sm:flex-1">
+    <div className="relative w-full sm:w-auto sm:max-w-xs sm:min-w-52 sm:flex-1">
       <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
       <input
         type="search"

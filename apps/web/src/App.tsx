@@ -1,36 +1,41 @@
-import type { ReactNode } from 'react';
+import { lazy, type ComponentType, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router';
 import { useAuth } from './auth/AuthContext';
 import { AppLayout } from './layout/AppLayout';
 import { navSections } from './layout/nav';
+import { t } from './i18n';
 import { canAccess, type Role } from './lib/roles';
 import { ComingSoonPage } from './pages/ComingSoonPage';
-import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
-import { DebtsPage } from './pages/finance/DebtsPage';
-import { ReportsPage } from './pages/finance/ReportsPage';
-import { MaterialsPage } from './pages/materials/MaterialsPage';
-import { customerConfig, PartnersPage, supplierConfig } from './pages/partners/PartnersPage';
-import { PurchaseOrderDetailPage } from './pages/purchasing/PurchaseOrderDetailPage';
-import { PurchaseOrderFormPage } from './pages/purchasing/PurchaseOrderFormPage';
-import { PurchaseOrdersPage } from './pages/purchasing/PurchaseOrdersPage';
-import { QuotationDetailPage } from './pages/sales/QuotationDetailPage';
-import { SalesDocFormPage } from './pages/sales/SalesDocFormPage';
-import { SalesListPage } from './pages/sales/SalesListPage';
-import { SalesOrderDetailPage } from './pages/sales/SalesOrderDetailPage';
-import { IssuesPage } from './pages/stock/IssuesPage';
-import { ReceiptsPage } from './pages/stock/ReceiptsPage';
-import { StockBalancesPage } from './pages/stock/StockBalancesPage';
-import { StockCountPage } from './pages/stock/StockCountPage';
-import { StockDocListPage } from './pages/stock/StockDocListPage';
-import { TransferFormPage } from './pages/stock/TransferFormPage';
-import { WarehousesPage } from './pages/WarehousesPage';
+
+// Mỗi trang là một chunk riêng: lần đầu chỉ tải trang đăng nhập và khung ứng dụng.
+const page = <T extends string>(load: () => Promise<Record<T, ComponentType<any>>>, name: T) =>
+  lazy(() => load().then((m) => ({ default: m[name] })));
+const DashboardPage = page(() => import('./pages/DashboardPage'), 'DashboardPage');
+const DebtsPage = page(() => import('./pages/finance/DebtsPage'), 'DebtsPage');
+const ReportsPage = page(() => import('./pages/finance/ReportsPage'), 'ReportsPage');
+const MaterialsPage = page(() => import('./pages/materials/MaterialsPage'), 'MaterialsPage');
+const PurchaseOrderDetailPage = page(() => import('./pages/purchasing/PurchaseOrderDetailPage'), 'PurchaseOrderDetailPage');
+const PurchaseOrderFormPage = page(() => import('./pages/purchasing/PurchaseOrderFormPage'), 'PurchaseOrderFormPage');
+const PurchaseOrdersPage = page(() => import('./pages/purchasing/PurchaseOrdersPage'), 'PurchaseOrdersPage');
+const QuotationDetailPage = page(() => import('./pages/sales/QuotationDetailPage'), 'QuotationDetailPage');
+const SalesDocFormPage = page(() => import('./pages/sales/SalesDocFormPage'), 'SalesDocFormPage');
+const SalesListPage = page(() => import('./pages/sales/SalesListPage'), 'SalesListPage');
+const SalesOrderDetailPage = page(() => import('./pages/sales/SalesOrderDetailPage'), 'SalesOrderDetailPage');
+const IssuesPage = page(() => import('./pages/stock/IssuesPage'), 'IssuesPage');
+const ReceiptsPage = page(() => import('./pages/stock/ReceiptsPage'), 'ReceiptsPage');
+const StockBalancesPage = page(() => import('./pages/stock/StockBalancesPage'), 'StockBalancesPage');
+const StockCountPage = page(() => import('./pages/stock/StockCountPage'), 'StockCountPage');
+const StockDocListPage = page(() => import('./pages/stock/StockDocListPage'), 'StockDocListPage');
+const TransferFormPage = page(() => import('./pages/stock/TransferFormPage'), 'TransferFormPage');
+const WarehousesPage = page(() => import('./pages/WarehousesPage'), 'WarehousesPage');
+const PartnersPage = page(() => import('./pages/partners/PartnersPage'), 'PartnersPage');
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) {
-    return <div className="flex h-full items-center justify-center text-sm text-slate-500">Đang tải…</div>;
+    return <div className="flex h-full items-center justify-center text-sm text-slate-500">{t('Đang tải…')}</div>;
   }
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   return children;
@@ -45,8 +50,8 @@ function Guard({ roles, children }: { roles?: Role[]; children: ReactNode }) {
 /** Trang của các mục menu đã làm xong; mục còn lại hiển thị "đang phát triển". */
 const pages: Record<string, ReactNode> = {
   '/materials': <MaterialsPage />,
-  '/suppliers': <PartnersPage key="suppliers" config={supplierConfig} />,
-  '/customers': <PartnersPage key="customers" config={customerConfig} />,
+  '/suppliers': <PartnersPage key="suppliers" kind="supplier" />,
+  '/customers': <PartnersPage key="customers" kind="customer" />,
   '/warehouses': <WarehousesPage />,
   '/purchase-orders': <PurchaseOrdersPage />,
   '/stock/receipts': <ReceiptsPage />,

@@ -19,14 +19,14 @@ interface Config {
   writeRoles: Role[];
 }
 
-export const supplierConfig: Config = {
+const supplierConfig: Config = {
   resource: 'suppliers',
   title: 'Nhà cung cấp',
   noun: 'nhà cung cấp',
   codeHint: 'VD: NCC-CDV',
   writeRoles: ['PURCHASING'],
 };
-export const customerConfig: Config = {
+const customerConfig: Config = {
   resource: 'customers',
   title: 'Khách hàng',
   noun: 'khách hàng',
@@ -35,7 +35,8 @@ export const customerConfig: Config = {
 };
 
 /** Trang danh sách dùng chung cho nhà cung cấp và khách hàng. */
-export function PartnersPage({ config }: { config: Config }) {
+export function PartnersPage({ kind }: { kind: 'supplier' | 'customer' }) {
+  const config = kind === 'supplier' ? supplierConfig : customerConfig;
   const { user } = useAuth();
   const canEdit = canAccess(user, config.writeRoles);
   const qc = useQueryClient();

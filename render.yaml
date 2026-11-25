@@ -1,0 +1,19 @@
+# Render Blueprint: một web service chạy Dockerfile (API + giao diện).
+# CSDL dùng PostgreSQL bên ngoài (VD Neon – gói miễn phí không hết hạn): điền DATABASE_URL khi tạo.
+services:
+  - type: web
+    name: justin-stock
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false # nhập tay chuỗi kết nối PostgreSQL (có ?sslmode=require)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: CORS_ORIGIN
+        value: https://justin-stock.onrender.com

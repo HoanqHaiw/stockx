@@ -8,6 +8,7 @@ import { Brand } from '../layout/AppLayout';
 import { ApiError } from '../lib/api';
 import { roleLabel, type Role } from '../lib/roles';
 import { Button, ErrorBanner, TextInput } from '../components/ui';
+import { ServerWake } from '../components/ServerWake';
 
 // Tài khoản demo tạo bởi prisma/seed.ts, hiển thị sẵn để nhà tuyển dụng thử nhanh từng vai trò.
 const DEMO_PASSWORD = 'Demo@123';
@@ -71,6 +72,7 @@ export function LoginPage() {
             <form onSubmit={onSubmit} className="rounded-xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(23,36,41,.04)]">
               <h2 className="text-lg font-semibold tracking-[-0.01em]">{t('Đăng nhập')}</h2>
               <p className="mt-1 mb-5 text-sm text-slate-500">{t('Dùng tài khoản công ty của bạn')}</p>
+              <ServerWake />
               {error && <ErrorBanner message={error} />}
               <div className="space-y-4">
                 <TextInput label="Email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />

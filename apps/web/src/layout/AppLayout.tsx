@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
@@ -106,7 +106,9 @@ export function AppLayout() {
           </div>
         </header>
         <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8">
-          <Outlet />
+          <Suspense fallback={<div className="py-16 text-center text-sm text-slate-400">{t('Đang tải…')}</div>}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

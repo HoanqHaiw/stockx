@@ -412,6 +412,7 @@ model StockLedger {
 
   @@index([materialId, warehouseId, createdAt]) // thẻ kho
   @@index([warehouseId, createdAt]) // báo cáo nhập-xuất-tồn theo kho
+  @@index([createdAt]) // báo cáo nhập-xuất-tồn tất cả kho
   @@index([documentId])
 }
 
