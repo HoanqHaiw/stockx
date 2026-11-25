@@ -7,7 +7,7 @@ nhập – xuất – tồn nhiều kho, chuyển kho, kiểm kê, công nợ v�
 > chuyển kho, kiểm kê, tồn kho, thẻ kho, công nợ, thanh toán, dashboard và báo cáo Excel.
 > Giao diện song ngữ **Tiếng Việt / English** (nút VI · EN ở góc trên).
 >
-> **Demo:** _(điền link Render sau khi deploy)_ · tài khoản demo ở mục bên dưới.
+> **Demo:** https://justin-stock.onrender.com · tài khoản demo ở mục bên dưới (lần mở đầu có thể chờ ~1 phút nếu server đang ngủ).
 
 ## Giao diện
 
